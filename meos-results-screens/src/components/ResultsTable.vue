@@ -15,10 +15,23 @@
 				
 					<tr v-for="result in cls.clsResults" v-bind:key="result.id">
 
-						<td class="col-overallRank">{{ result.finishRank }}</td>
+						<td v-if="result.status == 0" class="col-overallRank"><font-awesome-icon v-bind:icon="statusZero(result)" /></td>
+						<td v-else-if="result.status == 1" class="col-overallRank">{{ result.finishRank }}</td>
+						<td v-else-if="result.status == 3" class="col-overallRank">MP</td>
+						<td v-else-if="result.status == 4" class="col-overallRank">DNF</td>
+						<td v-else-if="result.status == 5" class="col-overallRank">DQ</td>
+						<td v-else-if="result.status == 6" class="col-overallRank">OT</td>
+						<td v-else-if="result.status == 7" class="col-overallRank">DNS</td>
+						<td v-else-if="result.status == 8" class="col-overallRank">CNL</td>
+						<td v-else-if="result.status == 9" class="col-overallRank">NP</td>
+						<td v-else class="col-overallRank"></td>
+
 						<td class="col-competitor">{{ result.competitor }}</td>
 						<td class="col-club">GS A</td>
-						<td class="col-elapsedTime">{{ result.finishTime }}</td>
+
+						<td v-if="result.finishTime == null" class="col-elapsedTime">{{ (calculateElapsedTime(result.startTime) / 10) | moment("h:mm:ss") }}</td>
+						<td v-else class="col-elapsedTime">{{ result.finishTime }}</td>
+
 						<td class="col-elapsedDiff">{{ result.finishDiff }}</td>
 
 						<!-- we need to use i (index) rather than n (value) so we start at zero-->
@@ -170,9 +183,42 @@ td.col-radioDiff {
 				console.log(this.resultsResponse)
 			},
 
-			determineStatus(status) {
+			// Calculates the current elapsed time for a competitor, based on their startTime
+			calculateElapsedTime(startTime) {
 
-				
+				// Time of day in 10ths of seconds
+				var dt = new Date();
+				var currentTimeSecs = (dt.getSeconds() + (60 * dt.getMinutes()) + (60 * 60 * dt.getHours())) * 10;
+
+				// Calculate elapsed running time
+				var elapsedRunningTime = currentTimeSecs - startTime;
+
+				// Return the result
+				return elapsedRunningTime;
+
+			},
+
+			// Determines when the status is 0 whether the competitor is started or not yet started, and returns the relevant icon
+			statusZero(resultObject) {
+
+				// Calculate their elapsed time
+				var elapsedRunningTime = this.calculateElapsedTime(resultObject.startTime);
+
+				// They have started...
+				if (elapsedRunningTime >= 0) {
+
+					// Set the icon to a running man
+					return `running`;							
+
+				}
+
+				// They have not yet started...
+				else {
+
+					// Set the icon to three dots (waiting...)
+					return `ellipsis-h`;
+
+				}
 
 			}
 
