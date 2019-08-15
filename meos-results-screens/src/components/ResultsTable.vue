@@ -29,7 +29,7 @@
 						<td class="col-competitor">{{ result.competitor }}</td>
 						<td class="col-club">GS A</td>
 
-						<td v-if="result.finishTime == null" class="col-elapsedTime">{{ (calculateElapsedTime(result.startTime) / 10) | moment("h:mm:ss") }}</td>
+						<td v-if="result.finishTime == null" class="col-elapsedTime">{{ formatAbsoluteTime(calculateElapsedTime(result.startTime)) }}</td>
 						<td v-else class="col-elapsedTime">{{ result.finishTime }}</td>
 
 						<td class="col-elapsedDiff">{{ result.finishDiff }}</td>
@@ -181,6 +181,32 @@ td.col-radioDiff {
 				this.resultsResponse = await meosResultsApi.getResults()
 				// eslint-disable-next-line
 				console.log(this.resultsResponse)
+			},
+
+			// Formats a time in 10ths of seconds into h:mm:ss or mm:ss
+			formatAbsoluteTime(t) {
+
+				if (t) {	
+
+					var h, m, s;
+					t = t/10; // convert from 10ths of seconds into seconds
+
+					if (t > 3600) {
+						h = Math.floor(t/3600).toString();
+						m = Math.floor((t/60)%60).toString().padStart(2, '0');
+						s = Math.floor(t%60).toString().padStart(2, '0');
+						return `${h}:${m}:${s}`;
+					}
+
+					else {
+						m = Math.floor((t/60)%60).toString().padStart(2, '0');
+						s = Math.floor(t%60).toString().padStart(2, '0');
+						return `${m}:${s}`;
+					}
+				}
+
+				return null;
+
 			},
 
 			// Calculates the current elapsed time for a competitor, based on their startTime
