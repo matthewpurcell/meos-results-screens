@@ -42,7 +42,8 @@
 						<!-- we need to use i (index) rather than n (value) so we start at zero-->
 						<template v-for="(n, i) in results.cls.radioCount">
 
-							<td class="col-radioTime" :key="result.id + '_' + i + '_time'" :style="{ width: colRadioTime + 'px' }">{{ result.radios[i].time }}</td>
+							<!-- <td class="col-radioTime" :key="result.id + '_' + i + '_time'" :style="{ width: colRadioTime + 'px' }">{{ result.radios[i].time }}</td> -->
+							<time-cell :value="result.radios[i]" :key="result.id + '_' + i + '_time'" :style="{ width: colRadioTime + 'px' }"></time-cell>
 
 							<!-- if no radio punch then print no brackets-->
 							<td class="col-radioRank" :key="result.id + '_' + i + '_rank'" :style="{ width: colRadioRank + 'px' }">
@@ -161,6 +162,7 @@ td.col-radioDiff {
 <script>
 
 	import meosResultsApi from '@/meos-results-api'
+	import TimeCell from '@/components/TimeCell.vue'
 
 	export default {
 
@@ -345,6 +347,10 @@ td.col-radioDiff {
 			}
 
 			updateLoop()
+		},
+
+		components: {
+			TimeCell
 		},
 
 		methods: {
