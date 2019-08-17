@@ -1,6 +1,6 @@
 <template>
 	<td id="timeCell" class="col-radioTime" :class="{ flash }">
-		{{ value.time }}
+		{{ value }}
 	</td>
 </template>
 
@@ -12,7 +12,7 @@
 	}
 
 	.flash {
-		animation: flash 2s;
+		animation: flash 10s;
 	}
 
 </style>

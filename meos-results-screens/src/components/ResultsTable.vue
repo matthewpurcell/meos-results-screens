@@ -43,7 +43,7 @@
 						<template v-for="(n, i) in results.cls.radioCount">
 
 							<!-- <td class="col-radioTime" :key="result.id + '_' + i + '_time'" :style="{ width: colRadioTime + 'px' }">{{ result.radios[i].time }}</td> -->
-							<time-cell :value="result.radios[i]" :key="result.id + '_' + i + '_time'" :style="{ width: colRadioTime + 'px' }"></time-cell>
+							<time-cell :value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code" :style="{ width: colRadioTime + 'px' }"></time-cell>
 
 							<!-- if no radio punch then print no brackets-->
 							<td class="col-radioRank" :key="result.id + '_' + i + '_rank'" :style="{ width: colRadioRank + 'px' }">
