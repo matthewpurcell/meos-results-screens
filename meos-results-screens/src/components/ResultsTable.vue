@@ -376,7 +376,12 @@ td.col-radioDiff {
 					}
 
 					else {
-						m = Math.floor((t/60)%60).toString().padStart(2, '0');
+						if (t >= 600 ) {
+							m = Math.floor((t/60)%60).toString().padStart(2, '0');
+						}
+						else {
+							m = Math.floor((t/60)%60).toString().padStart(1, '0');
+						}
 						s = Math.floor(t%60).toString().padStart(2, '0');
 						return `${m}:${s}`;
 					}
