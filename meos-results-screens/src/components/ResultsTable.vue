@@ -42,16 +42,13 @@
 						<!-- we need to use i (index) rather than n (value) so we start at zero-->
 						<template v-for="(n, i) in results.cls.radioCount">
 
-							<!-- <td class="col-radioTime" :key="result.id + '_' + i + '_time'" :style="{ width: colRadioTime + 'px' }">{{ result.radios[i].time }}</td> -->
-							<time-cell :value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code" :style="{ width: colRadioTime + 'px' }"></time-cell>
+							<flash-cell :display-value="result.radios[i].time" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-time'" class="col-radioTime" :style="{ width: colRadioTime + 'px' }"></flash-cell>
 
 							<!-- if no radio punch then print no brackets-->
-							<td class="col-radioRank" :key="result.id + '_' + i + '_rank'" :style="{ width: colRadioRank + 'px' }">
-								<template v-if="result.radios[i].time == null"></template>
-								<template v-else>({{ result.radios[i].rank }})</template>
-							</td>
+							<flash-cell v-if="result.radios[i].time == null" :display-value="null" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-rank'" class="col-radioRank" :style="{ width: colRadioRank + 'px' }"></flash-cell>
+							<flash-cell v-else :display-value="'(' + result.radios[i].rank + ')'" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-rank'" class="col-radioRank" :style="{ width: colRadioRank + 'px' }"></flash-cell>
 
-							<td class="col-radioDiff" :key="result.id + '_radio' + i + '_diff'" :style="{ width: colRadioDiff + 'px' }">{{ result.radios[i].diff }}</td>
+							<flash-cell :display-value="result.radios[i].diff" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-diff'" class="col-radioDiff" :style="{ width: colRadioDiff + 'px' }"></flash-cell>
 
 						</template>
 
@@ -162,7 +159,7 @@ td.col-radioDiff {
 <script>
 
 	import meosResultsApi from '@/meos-results-api'
-	import TimeCell from '@/components/TimeCell.vue'
+	import FlashCell from '@/components/FlashCell.vue'
 
 	export default {
 
@@ -350,7 +347,7 @@ td.col-radioDiff {
 		},
 
 		components: {
-			TimeCell
+			FlashCell
 		},
 
 		methods: {

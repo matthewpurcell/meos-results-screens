@@ -1,6 +1,6 @@
 <template>
-	<td id="timeCell" class="col-radioTime" :class="{ flash }">
-		{{ value }}
+	<td id="flashCell" :class="{ flash }">
+		{{ displayValue }}
 	</td>
 </template>
 
@@ -21,8 +21,8 @@
 
 	export default {
 
-		name: 'time-cell',
-		props: ['value'],
+		name: 'flash-cell',
+		props: ['display-value', 'watch-value'],
 
 		data() {
 			return {
@@ -31,7 +31,7 @@
 		},
   
 		watch: {
-			value() {
+			watchValue() {
 				if (this.flash) {
 					this.flash = false;
 					this.$nextTick(() => {
