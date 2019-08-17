@@ -5,67 +5,75 @@
 	:style="{ paddingLeft: pageSidePadding + 'px', paddingRight: pageSidePadding + 'px' }"
 	>
 
-		<div
+		<table
 			v-for="(column, columnI) of pages[pageNum]"
 			:key="columnI"
 			class="column"
 			:style="{ marginLeft: (columnI === 0 ? 0 : columnGap) + 'px' }"
 		>
 
-			<table
-				v-for="(results, resultsI) of column"
-				:key="resultsI"
+			<template
+				v-for="(results, resultsI) of column.classes"
 			>
 
-				<thead>
+				<tr
+					:key="`${resultsI}-header`"
+					class="headingRow"
+					:style="{ height: headerRowHeight + 'px', backgroundColor: classColor(results.cls.clsName) }"
+				>
+					<th class="className" colspan="5">{{ results.cls.clsName }} {{ results.continued ? '(Cont)' : '' }}</th>
+					<th colspan="3" v-for="n in results.cls.radioCount" :key="n"><font-awesome-icon icon="broadcast-tower" /><sub>{{ n }}</sub></th>
+					<th
+						v-if="results.cls.radioCount < column.maxRadioCount"
+						:colspan="(column.maxRadioCount - results.cls.radioCount) * 3"
+					/>
+				</tr>
 
-					<tr class="headingRow" :style="{ height: rowHeight * 2 + 'px', backgroundColor: classColor(results.cls.clsName) }">
-						<th class="className" colspan="5">{{ results.cls.clsName }} {{ results.continued ? '(Cont)' : '' }}</th>
-						<th colspan="3" v-for="n in results.cls.radioCount" :key="n"><font-awesome-icon icon="broadcast-tower" /><sub>{{ n }}</sub></th>
-					</tr>
+				<tr
+					v-for="result of results.results"
+					:key="`${resultsI}-result-${result.id}`"
+					:style="{ height: rowHeight + 'px' }"
+				>
 
-				</thead>
+					<td class="col-overallRank" :style="{ width: colOverallRank + 'px' }">
+						<font-awesome-icon v-if="result.status == 0" :icon="statusZero(result)" />
+						<template v-else-if="result.status == 1">{{ result.finishRank }}</template>
+						<template v-else>{{ statusToRank[result.status] }}</template>
+					</td>
 
-				<tbody>
+					<td class="col-competitor" :style="{ width: colCompetitor + 'px' }">{{ result.competitor }}</td>
+					<td class="col-club" :style="{ width: colClub + 'px' }">GS A</td>
 
-					<tr v-for="result of results.results" :key="result.id" :style="{ height: rowHeight + 'px' }">
+					<td class="col-elapsedTime" :style="{ width: colElapsedTime + 'px' }">
+						<template v-if="result.finishTime == null">{{ (calculateElapsedTime(result.startTime) / 10) | formatAbsoluteTime }}</template>
+						<template v-else>{{ result.finishTime }}</template>
+					</td>
 
-						<td class="col-overallRank" :style="{ width: colOverallRank + 'px' }">
-							<font-awesome-icon v-if="result.status == 0" :icon="statusZero(result)" />
-							<template v-else-if="result.status == 1">{{ result.finishRank }}</template>
-							<template v-else>{{ statusToRank[result.status] }}</template>
-						</td>
+					<td class="col-elapsedDiff" :style="{ width: colElapsedDiff + 'px' }">{{ result.finishDiff }}</td>
 
-						<td class="col-competitor" :style="{ width: colCompetitor + 'px' }">{{ result.competitor }}</td>
-						<td class="col-club" :style="{ width: colClub + 'px' }">GS A</td>
+					<!-- we need to use i (index) rather than n (value) so we start at zero-->
+					<template v-for="(n, i) in results.cls.radioCount">
 
-						<td class="col-elapsedTime" :style="{ width: colElapsedTime + 'px' }">
-							<template v-if="result.finishTime == null">{{ (calculateElapsedTime(result.startTime) / 10) | formatAbsoluteTime }}</template>
-							<template v-else>{{ result.finishTime }}</template>
-						</td>
+						<flash-cell :display-value="result.radios[i].time" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-time'" class="col-radioTime" :style="{ width: colRadioTime + 'px' }"></flash-cell>
 
-						<td class="col-elapsedDiff" :style="{ width: colElapsedDiff + 'px' }">{{ result.finishDiff }}</td>
+						<!-- if no radio punch then print no brackets-->
+						<flash-cell v-if="result.radios[i].time == null" :display-value="null" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-rank'" class="col-radioRank" :style="{ width: colRadioRank + 'px' }"></flash-cell>
+						<flash-cell v-else :display-value="'(' + result.radios[i].rank + ')'" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-rank'" class="col-radioRank" :style="{ width: colRadioRank + 'px' }"></flash-cell>
 
-						<!-- we need to use i (index) rather than n (value) so we start at zero-->
-						<template v-for="(n, i) in results.cls.radioCount">
+						<flash-cell :display-value="result.radios[i].diff" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-diff'" class="col-radioDiff" :style="{ width: colRadioDiff + 'px' }"></flash-cell>
 
-							<flash-cell :display-value="result.radios[i].time" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-time'" class="col-radioTime" :style="{ width: colRadioTime + 'px' }"></flash-cell>
+					</template>
 
-							<!-- if no radio punch then print no brackets-->
-							<flash-cell v-if="result.radios[i].time == null" :display-value="null" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-rank'" class="col-radioRank" :style="{ width: colRadioRank + 'px' }"></flash-cell>
-							<flash-cell v-else :display-value="'(' + result.radios[i].rank + ')'" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-rank'" class="col-radioRank" :style="{ width: colRadioRank + 'px' }"></flash-cell>
+					<td
+						v-if="results.cls.radioCount < column.maxRadioCount"
+						:colspan="(column.maxRadioCount - results.cls.radioCount) * 3"
+					/>
 
-							<flash-cell :display-value="result.radios[i].diff" :watch-value="result.radios[i].time" :key="result.id + '-' + result.radios[i].code + '-diff'" class="col-radioDiff" :style="{ width: colRadioDiff + 'px' }"></flash-cell>
+				</tr>
 
-						</template>
+			</template>
 
-					</tr>
-
-				</tbody>
-
-			</table>
-
-		</div>
+		</table>
 
 	</div>
 
@@ -104,12 +112,12 @@ th {
 	padding-bottom: 10px;
 }
 
-tbody tr:nth-child(even){
-  background-color: #444;
+tr:nth-child(even){
+	background-color: #444;
 }
 
-tbody tr:nth-child(odd){
-  background-color: #333;
+tr:nth-child(odd){
+	background-color: #333;
 }
 
 th.className {
@@ -228,12 +236,10 @@ td.col-radioDiff {
 			pages() {
 				const {
 					resultsResponse,
-					windowWidth,
 					windowHeight,
 					rowHeight,
 					headerRowHeight,
 					columnGap,
-					pageSidePadding,
 					colOverallRank,
 					colCompetitor,
 					colClub,
@@ -243,6 +249,8 @@ td.col-radioDiff {
 					colRadioRank,
 					colRadioDiff,
 				} = this
+				
+				const windowWidth = this.windowWidth - this.pageSidePadding * 2
 
 				if (!resultsResponse) {
 					return []
@@ -282,12 +290,15 @@ td.col-radioDiff {
 
 					// Do we need another column?
 					if (!column || overflowV) {
-						column = []
+						column = {
+							maxRadioCount: 0,
+							classes: [],
+						}
 						page.push(column)
 						results = null
 						columnWidth = tableWidth
 						columnHeight = 0
-						overallWidth += tableWidth + (page.length === 1 ? 0 : columnGap) + (pageSidePadding * 2)
+						overallWidth += tableWidth + (page.length === 1 ? 0 : columnGap)
 						fit(height)
 						return
 					}
@@ -295,7 +306,8 @@ td.col-radioDiff {
 					// Do we need another results section?
 					if (!results) {
 						results = []
-						column.push({
+						column.maxRadioCount = Math.max(column.maxRadioCount, cls.radioCount)
+						column.classes.push({
 							cls,
 							results,
 							continued: lastCls === cls,
@@ -317,6 +329,31 @@ td.col-radioDiff {
 					for (const result of cls.clsResults) {
 						fit(rowHeight)
 						results.push(result)
+					}
+				}
+				
+				// Trim away empty columns/sections/etc
+				for (let i = pages.length - 1; i >= 0; i--) {
+					const page = pages[i]
+
+					for (let j = page.length - 1; j >= 0; j--) {
+						const column = page[j]
+
+						for (let k = column.classes.length - 1; k >= 0; k--) {
+							const section = column.classes[k]
+
+							if (!section.results.length) {
+								column.classes.splice(k, 1)
+							}
+						}
+
+						if (!column.classes.length) {
+							page.splice(j, 1)
+						}
+					}
+
+					if (!page.length) {
+						pages.splice(i, 1)
 					}
 				}
 
