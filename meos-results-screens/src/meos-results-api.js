@@ -17,6 +17,6 @@ export default {
     })
   },
   getResults () {
-    return this.execute('get', '/results-api.php?cmp=1&cls=1,2,3')
+    return this.execute('get', '/results-api.php?cmp=2')
   }
 }
