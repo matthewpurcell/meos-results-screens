@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const client = axios.create( {
-	baseURL: 'https://meos.codecadets.com/mop/',
+	baseURL: process.env.BASE_MEOS_MOP_URL,
 	json: true
 })
 
