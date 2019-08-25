@@ -2,7 +2,7 @@
 
 	<div v-if="pages[pageNum]" 
 	class="columns"
-	:style="{ paddingLeft: pageSidePadding + 'px', paddingRight: pageSidePadding + 'px' }"
+	:style="{ paddingLeft: pageSidePadding + 'px', paddingRight: pageSidePadding + 'px', paddingTop: pageTopPadding + 'px' }"
 	>
 
 		<table
@@ -19,10 +19,11 @@
 				<tr
 					:key="`${resultsI}-header`"
 					class="headingRow"
-					:style="{ height: headerRowHeight + 'px', backgroundColor: classColor(results.cls.clsName) }"
+					:style="{ height: headerRowHeight + 'px' }"
 				>
-					<th class="className" colspan="5">{{ results.cls.clsName }} {{ results.continued ? '(Cont)' : '' }}</th>
-					<th colspan="3" v-for="n in results.cls.radioCount" :key="n"><font-awesome-icon icon="broadcast-tower" /><sub>{{ n }}</sub></th>
+					<th class="className" colspan="3"><span class="pillIcon" :style="{ backgroundColor: classColor(results.cls.clsName) }">{{ results.cls.clsName }} <span class="contText">{{ results.continued ? '(Cont)' : '' }}</span> <span class="classLength">{{ results.cls.length != null ? formatDistance(results.cls.length) + ' km' : '' }}</span></span></th>
+					<th class="elapsedHeading" colspan="2">Total</th>
+					<th class="splitHeading" colspan="3" v-for="(n, i) in results.cls.radioCount" :key="n">Split {{ n }} - {{ results.cls.radioInfo[i].distance != null ? formatDistance(results.cls.radioInfo[i].distance) + ' km' : '' }}</th>
 					<th
 						v-if="results.cls.radioCount < column.maxRadioCount"
 						:colspan="(column.maxRadioCount - results.cls.radioCount) * 3"
@@ -36,16 +37,18 @@
 				>
 
 					<td class="col-overallRank" :style="{ width: colOverallRank + 'px' }">
-						<font-awesome-icon v-if="result.status == 0" :icon="statusZero(result)" />
-						<template v-else-if="result.status == 1">{{ result.finishRank }}</template>
-						<template v-else>{{ statusToRank[result.status] }}</template>
+						<font-awesome-icon v-if="result.status == 0 && statusZero(result) == 'running'" icon="running" class="pillIcon running" />
+						<font-awesome-icon v-else-if="result.status == 0 && statusZero(result) == 'pending'" icon="ellipsis-h" />
+						<template v-else-if="result.status == 1"><span class="pillIcon finisher">{{ result.finishRank }}</span></template>
+						<template v-else-if="result.status == 100"><span class="pillIcon finisher">{{ result.finishRank }}</span></template>
+						<template v-else><span class="pillIcon nonfinisher">{{ statusToRank[result.status] }}</span></template>
 					</td>
 
 					<td class="col-competitor" :style="{ width: colCompetitor + 'px' }">{{ result.competitor }}</td>
-					<td class="col-club" :style="{ width: colClub + 'px' }">GS A</td>
+					<td class="col-club" :style="{ width: colClub + 'px' }">{{ result.club }}</td>
 
 					<td class="col-elapsedTime" :style="{ width: colElapsedTime + 'px' }">
-						<template v-if="result.finishTime == null">{{ (calculateElapsedTime(result.startTime) / 10) | formatAbsoluteTime }}</template>
+						<template v-if="result.finishTime == null && result.status == 0">{{ (calculateElapsedTime(result.startTime) / 10) | formatAbsoluteTime }}</template>
 						<template v-else>{{ result.finishTime }}</template>
 					</td>
 
@@ -124,6 +127,34 @@ th.className {
 	text-align: left;
 	font-size: 24px;
 	text-transform: uppercase;
+	padding-top: 10px;
+	padding-left: 10px;
+}
+
+tr.headingRow th.className span.pillIcon {
+	border-radius: 5px;
+	display: inline-block;
+	padding: 4px 16px 3px 16px;
+	width: 225px;
+}
+
+th.className .classLength {
+	margin-left: 5px;
+	font-size: 16px;
+}
+
+th.className .contText {
+	font-size: 16px;
+}
+
+th.elapsedHeading {
+	font-size: 14px;
+	text-align: center;
+}
+
+th.splitHeading {
+	font-size: 14px;
+	text-align: center;
 }
 
 td {
@@ -134,6 +165,30 @@ td.col-overallRank {
 	text-align: center;
 	font-size: 13px;
 	vertical-align: middle;
+}
+
+td.col-overallRank .pillIcon {
+	border: none;
+	padding: 2px 5px;
+	color: white;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	margin: 4px 2px;
+	border-radius: 16px;
+}
+
+td.col-overallRank .pillIcon.finisher {
+	background-color: #32a852;
+}
+
+td.col-overallRank .pillIcon.running {
+	padding: 2px 7px;
+	background-color: #d18400;
+}
+
+td.col-overallRank .pillIcon.nonfinisher {
+	background-color: #8c1414;
 }
 
 td.col-competitor {
@@ -203,10 +258,11 @@ td.col-radioDiff {
 
 				windowWidth: 0,
 				windowHeight: 0,
-				rowHeight: 26,
-				headerRowHeight: 44,
+				rowHeight: 30,
+				headerRowHeight: 56,
 				columnGap: 20,
 				pageSidePadding: 10,
+				pageTopPadding: 0,
 
 				// Column widths
 				colOverallRank: 40,
@@ -223,9 +279,9 @@ td.col-radioDiff {
 					4: 'DNF',
 					5: 'DQ',
 					6: 'OT',
-					7: 'DNS',
-					8: 'CNL',
-					9: 'NP',
+					20: 'DNS',
+					21: 'CNL',
+					99: 'NP',
 				}
 			}
 		},
@@ -273,7 +329,7 @@ td.col-radioDiff {
 				const fit = height => {
 					const additionalWidth = Math.max(0, tableWidth - columnWidth)
 					const overflowH = overallWidth + additionalWidth > windowWidth
-					const overflowV = columnHeight + height > windowHeight
+					const overflowV = columnHeight + height + this.pageTopPadding > windowHeight
 
 					// Do we need another page?
 					if (!page || (overflowH && page.length > 1)) {
@@ -366,6 +422,9 @@ td.col-radioDiff {
 				
 				if (t) {
 
+					// This code does hh:mm:ss for > 1 hour and mm:ss for < 1 hour
+
+					/*
 					var h, m, s;
 
 					if (t > 3600) {
@@ -385,11 +444,21 @@ td.col-radioDiff {
 						s = Math.floor(t%60).toString().padStart(2, '0');
 						return `${m}:${s}`;
 					}
+					*/
+
+					// This code does mmm:ss for everyone
+					var m, s;
+
+					m = Math.floor(t/60).toString();
+					s = Math.floor(t%60).toString().padStart(2, '0');
+					return `${m}:${s}`;
+
 				}
 
 				return null;
 
 			},
+
 		},
 
 		created () {
@@ -460,8 +529,8 @@ td.col-radioDiff {
 				// They have not started
 				if (elapsedRunningTime == null) {
 
-					// Set the icon to three dots (waiting...)
-					return `ellipsis-h`;
+					// Set the icon to three dots (pending...)
+					return 'pending';
 
 				}
 
@@ -469,9 +538,20 @@ td.col-radioDiff {
 				else {
 
 					// Set the icon to a running man
-					return `running`;
+					return 'running';
 
 				}
+
+			},
+
+			// Displays the distance info (if available) for a particular radio
+			formatDistance(d) {
+
+				// Convert the distance in meters into km for display, rounded to 1dp
+				var distanceInKm = parseFloat(d / 1000).toFixed(1);
+
+				// Return the distance
+				return distanceInKm;
 
 			},
 

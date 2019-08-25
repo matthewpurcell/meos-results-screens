@@ -9,6 +9,10 @@
 	header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 
 	function formatAbsoluteTime($t) {
+		
+		// This code does hh:mm:ss for > 1 hour and mm:ss for < 1 hour
+
+		/*
 		if ($t) {		
 			$t = $t/10; // convert from 10ths of seconds into seconds
 			if ($t > 3600)
@@ -16,10 +20,22 @@
 			else
 				return sprintf("%02d:%02d", ($t/60)%60, $t%60);
 		}
+		*/
+
+		// This code does mmm:ss for everyone
+		if ($t) {		
+			$t = $t/10; // convert from 10ths of seconds into seconds
+			return sprintf("%01d:%02d", ($t/60), $t%60);
+		}
+
 		return null;
 	}
 
 	function formatDiffTime($t) {
+
+		// This code does hh:mm:ss for > 1 hour and mm:ss for < 1 hour
+
+		/*
 		if ($t) {
 			$t = $t/10; // convert from 10ths of seconds into seconds
 			if ($t > 3600) 		
@@ -27,6 +43,14 @@
 			else
 				return sprintf("+%d:%02d", ($t/60)%60, $t%60);
 		}
+		*/
+
+		// This code does mmm:ss for everyone
+		if ($t) {
+			$t = $t/10; // convert from 10ths of seconds into seconds
+			return sprintf("+%d:%02d", ($t/60), $t%60);
+		}
+
 		return null;
 	}
 
@@ -186,7 +210,32 @@
 
 	// print_r($classToCourseArray);
 
-	// Close the connection to the event database
+
+	// ---------------------------------
+	// Get each runner's official status
+	// ---------------------------------
+
+	// We need to do this so we can differentiate between runners who have finished (punched the radio finish)
+	// unit but no download yet vs. runners who have downloaded and have a confirmed, official time and correct punches
+
+	// Query the database for the courses and distances
+	$sql = "SELECT Id, Status FROM oRunner";
+
+	// Create an associative array to hold the runner id -> status information
+	$runnerToOfficialStatusArray = array();
+
+	// Execute the query
+	$res = $linkEventDB->query($sql);
+
+	// Loop through each runner
+	while ($r = $res->fetch_assoc()) {
+
+		// Map each runner's id to a status
+		$runnerToOfficialStatusArray[$r['Id']] = $r['Status'];
+
+	}
+
+	// Close the connection to the event database - note to self, we don't use the event database again from here
 	mysqli_close($linkEventDB);
 
 
@@ -299,7 +348,30 @@
 			$resultObj['id'] = $r['id'];
 			$resultObj['competitor'] = $r['competitor'];
 			$resultObj['club'] = $r['club'];
+
+			// Set the status to be whatever MOP gives us...
 			$resultObj['status'] = $r['status'];
+
+			// ...but we need to do some checking if the status is "1" OK
+			if ($r['status'] == "1") {
+
+				// Check the runner's official status from the event database
+				if (array_key_exists($r['id'], $runnerToOfficialStatusArray)) {
+
+					// Check if the status is 0
+					if ($runnerToOfficialStatusArray[$r['id']] == "0") {
+
+						// This means that the runner has finished (as MOP gives us a status of 1) but they have
+						// not yet downloaded (as the event database status is 0) so give the runner our custom
+						// status of "100" which indicates a finish, but no download
+						$resultObj['status'] = "100";
+
+					}
+
+				}
+
+			}			
+
 			$resultObj['startTime'] = $r['startTime'];
 			$resultObj['finishTime'] = formatAbsoluteTime($r['finishTime']);
 			$resultObj['finishRank'] = $r['finishRank'];
