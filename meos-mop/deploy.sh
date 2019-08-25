@@ -10,3 +10,4 @@ cp -a . /var/www/html/meos-mop/
 # delete unnecessary files
 rm /var/www/html/meos-mop/config.dist.php
 rm /var/www/html/meos-mop/setup.php
+rm /var/www/html/meos-mop/deploy.sh
