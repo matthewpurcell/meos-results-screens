@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const client = axios.create( {
-	baseURL: process.env.BASE_MEOS_MOP_URL,
+	baseURL: process.env.VUE_APP_BASE_MEOS_MOP_URL,
 	json: true
 })
 
@@ -17,6 +17,6 @@ export default {
     })
   },
   getResults () {
-    return this.execute('get', '/results-api.php?cmp=2')
+    return this.execute('get', '/results-api.php')
   }
 }
