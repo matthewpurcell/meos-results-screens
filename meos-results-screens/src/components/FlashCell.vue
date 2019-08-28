@@ -7,12 +7,20 @@
 <style>
 
 	@keyframes flash {
-		100% { background-color: #333; }
-		0% { background-color: yellow; }
+		from { 
+			color: white;
+		}
+
+		to {
+			color: #E0E000;
+		}
 	}
 
 	.flash {
-		animation: flash 10s;
+		animation-duration: 1500ms;
+		animation-name: flash;
+		animation-iteration-count: 16;
+		animation-direction: alternate;
 	}
 
 </style>

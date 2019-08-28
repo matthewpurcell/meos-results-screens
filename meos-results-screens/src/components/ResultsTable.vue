@@ -34,6 +34,7 @@
 					v-for="result of results.results"
 					:key="`${resultsI}-result-${result.id}`"
 					:style="{ height: rowHeight + 'px' }"
+					v-bind:class="{ 'proceedToDownload':(result.status == 100) }"
 				>
 
 					<td class="col-overallRank" :style="{ width: colOverallRank + 'px' }">
@@ -84,7 +85,15 @@
 
 <style>
 
-@import url('https://fonts.googleapis.com/css?family=Roboto');
+/* roboto-regular - latin */
+@font-face {
+	font-family: 'Roboto';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Roboto'), local('Roboto-Regular'),
+		url('/fonts/roboto-v20-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+		url('/fonts/roboto-v20-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+	}
 
 body {
 	background-color: #333;
@@ -97,6 +106,7 @@ table {
 	border-collapse: collapse;
 	white-space: nowrap;
 	table-layout: fixed;
+	overflow: hidden;
 }
 
 table tr td {
@@ -107,6 +117,7 @@ table tr td {
 td, th {
 	padding: 0 3px;
 	box-sizing: border-box;
+	position: relative;
 }
 
 th {
@@ -114,6 +125,57 @@ th {
 	vertical-align: bottom;
 	padding-bottom: 10px;
 }
+
+@keyframes proceedToDownload {
+	0% { 
+		opacity: 0.1;
+	}
+
+	15% {
+		opacity: 1;
+	}
+
+	25% {
+		opacity: 1;
+	}
+
+	40% {
+		opacity: 0.1;
+	}
+
+	100% {
+		opacity: 0.1;
+	}
+
+}
+
+tr.proceedToDownload td:first-child:after {
+	position: absolute;
+	z-index: 1;
+	display: block;
+	text-align: left;
+	left: 0;
+	top: 0;
+	width: 1000px;
+	height: 24px;
+	padding-top: 5px;
+	margin-left: -50px;
+	content:"UNOFFICIAL • PROCEED TO DOWNLOAD • UNOFFICIAL • PROCEED TO DOWNLOAD • UNOFFICIAL • PROCEED TO DOWNLOAD";
+	font-size: 17px;
+	background: repeating-linear-gradient(
+		45deg,
+		#EF9F01,
+		#EF9F01 10px,
+		#FEBB34 10px,
+		#FEBB34 20px
+	);
+	color: white;
+	opacity: 0.1;
+	animation-duration: 30000ms;
+	animation-name: proceedToDownload;
+	animation-iteration-count: infinite;
+}
+
 
 tr:nth-child(even){
 	background-color: #444;
@@ -175,7 +237,7 @@ td.col-overallRank .pillIcon {
 	text-decoration: none;
 	display: inline-block;
 	margin: 4px 2px;
-	border-radius: 16px;
+	border-radius: 18px;
 }
 
 td.col-overallRank .pillIcon.finisher {
@@ -184,6 +246,10 @@ td.col-overallRank .pillIcon.finisher {
 
 td.col-overallRank .pillIcon.running {
 	padding: 2px 7px;
+	background-color: #d18400;
+}
+
+tr.proceedToDownload td.col-overallRank .pillIcon {
 	background-color: #d18400;
 }
 
@@ -326,6 +392,43 @@ td.col-radioDiff {
 				const tableBaseWidth = colOverallRank + colCompetitor + colClub + colElapsedTime + colElapsedDiff
 				const tableRadioWidth = colRadioTime + colRadioRank + colRadioDiff
 
+				const save = () => {
+					// This is all the data we need in order to restore the state
+					return {
+						pagesLength: pages.length,
+						pageLength: page && page.length,
+						columnLength: column && column.classes.length,
+						lastCls,
+						tableWidth,
+						columnWidth,
+						columnHeight,
+						overallWidth,
+					}
+				}
+
+				const rollback = state => {
+					({
+						lastCls,
+						tableWidth,
+						columnWidth,
+						columnHeight,
+						overallWidth,
+					} = state)
+
+					pages.splice(state.pagesLength)
+					page = pages[pages.length - 1]
+
+					if (page) {
+						page.splice(state.pageLength)
+						column = page[page.length - 1]
+
+						if (column) {
+							column.classes.splice(state.columnLength)
+							results = column.classes[column.classes.length - 1]
+						}
+					}
+				}
+
 				const fit = height => {
 					const additionalWidth = Math.max(0, tableWidth - columnWidth)
 					const overflowH = overallWidth + additionalWidth > windowWidth
@@ -381,10 +484,36 @@ td.col-radioDiff {
 				for (cls of resultsResponse.cmpResults) {
 					tableWidth = tableBaseWidth + tableRadioWidth * cls.radioCount
 					results = null
+					
+					// Save the current state in case we need to rollback
+					const state = save()
 
+					// Are we at the start of a page?
+					const atStartOfPage = !page || !page.length || !page[0].classes.length
+					const pagesLengthBefore = pages.length
+
+					// Fit the class
 					for (const result of cls.clsResults) {
 						fit(rowHeight)
 						results.push(result)
+					}
+					
+					// Was the class split across multiple pages?
+					const classSpansMultiplePages = pages.length > pagesLengthBefore
+
+					if (classSpansMultiplePages && !atStartOfPage) {
+						// Rollback
+						rollback(state)
+
+						// Fit the class on a new page
+						page = null
+						column = null
+						results = null
+						
+						for (const result of cls.clsResults) {
+							fit(rowHeight)
+							results.push(result)
+						}
 					}
 				}
 				
@@ -559,46 +688,7 @@ td.col-radioDiff {
 			classColor(str) {
 
 				var colors = [
-					"#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177" ,"#0d5ac1" ,
-					"#f205e6" ,"#1c0365" ,"#14a9ad" ,"#4ca2f9" ,"#a4e43f" ,"#d298e2" ,"#6119d0",
-					"#d2737d" ,"#c0a43c" ,"#f2510e" ,"#651be6" ,"#79806e" ,"#61da5e" ,"#cd2f00" ,
-					"#9348af" ,"#01ac53" ,"#c5a4fb" ,"#996635","#b11573" ,"#4bb473" ,"#75d89e" ,
-					"#2f3f94" ,"#2f7b99" ,"#da967d" ,"#34891f" ,"#b0d87b" ,"#ca4751" ,"#7e50a8" ,
-					"#c4d647" ,"#e0eeb8" ,"#11dec1" ,"#289812" ,"#566ca0" ,"#ffdbe1" ,"#2f1179" ,
-					"#935b6d" ,"#916988" ,"#513d98" ,"#aead3a", "#9e6d71", "#4b5bdc", "#0cd36d",
-					"#250662", "#cb5bea", "#228916", "#ac3e1b", "#df514a", "#539397", "#880977",
-					"#f697c1", "#ba96ce", "#679c9d", "#c6c42c", "#5d2c52", "#48b41b", "#e1cf3b",
-					"#5be4f0", "#57c4d8", "#a4d17a", "#225b8", "#be608b", "#96b00c", "#088baf",
-					"#f158bf", "#e145ba", "#ee91e3", "#05d371", "#5426e0", "#4834d0", "#802234",
-					"#6749e8", "#0971f0", "#8fb413", "#b2b4f0", "#c3c89d", "#c9a941", "#41d158",
-					"#fb21a3", "#51aed9", "#5bb32d", "#807fb", "#21538e", "#89d534", "#d36647",
-					"#7fb411", "#0023b8", "#3b8c2a", "#986b53", "#f50422", "#983f7a", "#ea24a3",
-					"#79352c", "#521250", "#c79ed2", "#d6dd92", "#e33e52", "#b2be57", "#fa06ec",
-					"#1bb699", "#6b2e5f", "#64820f", "#1c271", "#21538e", "#89d534", "#d36647",
-					"#7fb411", "#0023b8", "#3b8c2a", "#986b53", "#f50422", "#983f7a", "#ea24a3",
-					"#79352c", "#521250", "#c79ed2", "#d6dd92", "#e33e52", "#b2be57", "#fa06ec",
-					"#1bb699", "#6b2e5f", "#64820f", "#1c271", "#9cb64a", "#996c48", "#9ab9b7",
-					"#06e052", "#e3a481", "#0eb621", "#fc458e", "#b2db15", "#aa226d", "#792ed8",
-					"#73872a", "#520d3a", "#cefcb8", "#a5b3d9", "#7d1d85", "#c4fd57", "#f1ae16",
-					"#8fe22a", "#ef6e3c", "#243eeb", "#1dc18", "#dd93fd", "#3f8473", "#e7dbce",
-					"#421f79", "#7a3d93", "#635f6d", "#93f2d7", "#9b5c2a", "#15b9ee", "#0f5997",
-					"#409188", "#911e20", "#1350ce", "#10e5b1", "#fff4d7", "#cb2582", "#ce00be",
-					"#32d5d6", "#17232", "#608572", "#c79bc2", "#00f87c", "#77772a", "#6995ba",
-					"#fc6b57", "#f07815", "#8fd883", "#060e27", "#96e591", "#21d52e", "#d00043",
-					"#b47162", "#1ec227", "#4f0f6f", "#1d1d58", "#947002", "#bde052", "#e08c56",
-					"#28fcfd", "#bb09b", "#36486a", "#d02e29", "#1ae6db", "#3e464c", "#a84a8f",
-					"#911e7e", "#3f16d9", "#0f525f", "#ac7c0a", "#b4c086", "#c9d730", "#30cc49",
-					"#3d6751", "#fb4c03", "#640fc1", "#62c03e", "#d3493a", "#88aa0b", "#406df9",
-					"#615af0", "#4be47", "#2a3434", "#4a543f", "#79bca0", "#a8b8d4", "#00efd4",
-					"#7ad236", "#7260d8", "#1deaa7", "#06f43a", "#823c59", "#e3d94c", "#dc1c06",
-					"#f53b2a", "#b46238", "#2dfff6", "#a82b89", "#1a8011", "#436a9f", "#1a806a",
-					"#4cf09d", "#c188a2", "#67eb4b", "#b308d3", "#fc7e41", "#af3101", "#ff065",
-					"#71b1f4", "#a2f8a5", "#e23dd0", "#d3486d", "#00f7f9", "#474893", "#3cec35",
-					"#1c65cb", "#5d1d0c", "#2d7d2a", "#ff3420", "#5cdd87", "#a259a4", "#e4ac44",
-					"#1bede6", "#8798a4", "#d7790f", "#b2c24f", "#de73c2", "#d70a9c", "#25b67",
-					"#88e9b8", "#c2b0e2", "#86e98f", "#ae90e2", "#1a806b", "#436a9e", "#0ec0ff",
-					"#f812b3", "#b17fc9", "#8d6c2f", "#d3277a", "#2ca1ae", "#9685eb", "#8a96c6",
-					"#dba2e6", "#76fc1b", "#608fa4", "#20f6ba", "#07d7f6", "#dce77a", "#77ecca"
+					"#278EF1", "#290C74", "#1FC1DA", "#1F1A13", "#0B0A64", "#22BE54", "#148488", "#1329AF", "#23C288", "#29BABF", "#040154", "#4E8A08", "#25C12D", "#5559DE", "#3A6734", "#5F0206", "#12A667", "#5B6EC1", "#53D746", "#1C7C05", "#2237C0", "#35A865", "#245831", "#350CF3", "#06205D", "#362A9D", "#5209C7", "#25B4D1", "#4D3A5E", "#0D76AE", "#12BF6C", "#38D205", "#2DE3F8", "#38F6F6", "#524647", "#2BC774", "#25EF9B", "#1F0162", "#4C7DA6", "#25D957", "#2F4D83", "#47C517", "#2FA877", "#4C49C6", "#3A38B8", "#48DF56", "#21B0C1", "#2355E2", "#3A9C56", "#1A8B5B", "#182867", "#1C331D", "#4EDCD7", "#290540", "#35AEA2", "#163AC9", "#1A1FB1", "#36B1E4", "#5BC3AD", "#25E1DD", "#2ED9B2", "#284D73", "#4BC997", "#03BBC6", "#1CBFD4", "#14E2D1", "#5654BA", "#32A36D", "#451AB1", "#293BE9", "#01BDE2", "#346A96", "#111F56", "#18BA87", "#3F4276", "#4C2544", "#19C977", "#4E6852", "#0724BE", "#2ECDC5", "#31B7D8", "#1B4B31", "#215272", "#1328CC", "#27BC07", "#15C5E8", "#3A2AC3", "#450FF8", "#1CDC86", "#23F3D8", "#41680A", "#38E47E", "#15B5B4", "#186876", "#48C105", "#4DA032", "#37039A", "#4CC0B7", "#30EBD3", "#4DF296", "#329BC8", "#34852A", "#4B70AC", "#2E2CAD", "#3929B7", "#4AD7CB", "#04454D", "#0E1F0F", "#29D608", "#299F6A", "#1A5E48", "#17D3DD", "#4E816E", "#135B42", "#167D96", "#2164B9", "#1BE0F4", "#1E516D", "#5525B9", "#554C71", "#218C1D", "#1A75FA", "#514184", "#4DE313", "#21167B", "#5E67B2", "#3281DA", "#5572F7", "#1E526B", "#3F361F", "#41FCA3", "#155B38", "#0D741C", "#0E3366", "#31DBA7", "#1937DC", "#1E2339", "#347D34", "#0F337B", "#36166D", "#3C1ED3", "#3EF069", "#3C8EA8", "#011327", "#073C33", "#04E83D", "#4694F1", "#5B7A16", "#4D9821", "#4559AB", "#03B615", "#275189", "#58C8FA", "#372BCC", "#589258", "#12F5BC", "#4B36E6", "#161191", "#06C02C", "#1C512B", "#329D86", "#1A72B5", "#04B91B", "#21EB5B", "#33D817", "#24E23F", "#5333F0", "#45C9BC", "#3E08D0", "#4BC539", "#24A610", "#4248EB", "#346C3E", "#5AA472", "#4523CD", "#4FF49B", "#248115", "#590611", "#07A234", "#29FC6E", "#20CE3E", "#3FA8C7", "#23FF9E", "#1FF411", "#21D381", "#5B6D91", "#49A6C1", "#55C621", "#2596B4", "#587C96", "#1ABA60", "#47313E", "#488BFA", "#359E7B", "#4D7611", "#2BB342", "#4F4479", "#4F8368", "#2BFB26", "#063C55", "#04F6A9", "#4B3CB2", "#0B618F", "#286EC5", "#59D6A3", "#1A89EC", "#245F0E", "#26B69A", "#215618", "#2DE732", "#3BB716", "#1DE5AB", "#04F4D1", "#38142A", "#1A1721", "#1360E4", "#0BD473", "#28DE39", "#29A17D", "#51E4D6", "#3E7AA2", "#2AD34A", "#3212D6", "#14C188", "#1626F3", "#2FA84D", "#38A901", "#278BD2", "#526613", "#4F19EB", "#2D7E46", "#0C9CB4", "#221521", "#16ADA6", "#11A1D8", "#3ADC15", "#571EEB", "#36D937", "#015DB5", "#1E3FCE", "#295D8E", "#2E8AB3", "#371643", "#3BF530", "#4E8E02", "#1E8E72", "#16467B", "#230C79", "#547F31", "#49360E", "#1E412E", "#0EEB7E", "#3C8336", "#47497B", "#54B31B", "#48456D", "#1625ED", "#32999B", "#589A5A", "#307FC5", "#060BF9", "#257142", "#3F94AA", "#48599A", "#23CAFC", "#4D3CD4", "#350BF4", "#47D3C8", "#126BD7", "#21F407", "#075791", "#5F5859", "#48A8CF", "#3483DD", "#49406C", "#5FF311", "#192695", "#21452E", "#1BDED4", "#196E92", "#0CB435", "#2ABC6F", "#4B68A8", "#0CA713", "#3BC345", "#365525", "#45841A", "#1E8260", "#3DB268", "#01A97C", "#4BEDA4", "#1C781B", "#04FB15", "#3CB3D6", "#497F69", "#2B8194", "#01734B", "#1F72A1", "#5CC056", "#4B7AE2", "#48D494", "#4177BE", "#286D24", "#112DBD", "#2ECFD6", "#4D3118", "#2457AF", "#149A79", "#23E2D2", "#14FC82", "#1C26BB", "#3BD4B5", "#2D9927", "#20996D", "#148877", "#3A6F39", "#3677E7", "#34BC56", "#1776D2", "#214987", "#2C6C57", "#5B22D6", "#1A6173", "#17A27B", "#46C9AE", "#2EDC99", "#3AFA37", "#36B193", "#488477", "#29E74E", "#212861", "#074A7F", "#496E8A", "#2EBEBC", "#333B2D", "#1FED60", "#15253F", "#2AE0E7", "#18A765", "#427876", "#2C471E", "#23EA89", "#31A7BA", "#424A90", "#188B19", "#1FA99E", "#3171FE", "#35BAF6", "#0EED5D", "#099A61", "#049FC3", "#125359", "#3FBD85", "#2A1A83", "#2C65D4", "#4836E1", "#2D2905", "#1DDDA9", "#13D0D7", "#1FAACB", "#2D4AB7", "#36F9B5", "#358973", "#54B923", "#2BDC1B", "#54E425", "#424DD9", "#490C34", "#08CBC9", "#3AC1C0", "#3CA4B1", "#426287", "#06A952", "#39DED9", "#486EE2", "#4ADE19", "#558A95", "#3976E0", "#0D2511", "#0FBA42", "#4B5292", "#324F39", "#26CA56", "#0AF92D", "#4386EE", "#23E77E", "#3553B1", "#212CE6", "#14C647", "#2BBDA5", "#023351", "#332207", "#438766", "#35AE69", "#073E6C", "#396A8A", "#41B116", "#36BA61", "#49483B", "#29AFE1"
 					];
 
 				var hash = 0;
