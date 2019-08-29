@@ -2,7 +2,7 @@
 
 	<div v-if="pages[pageNum]" 
 	class="columns"
-	:style="{ paddingLeft: pageSidePadding + 'px', paddingRight: pageSidePadding + 'px', paddingTop: pageTopPadding + 'px' }"
+	:style="{ paddingLeft: pageSidePadding + 'px', paddingRight: pageSidePadding + 'px', paddingTop: pageTopPadding + 'px', paddingBottom: pageBottomPadding + 'px' }"
 	>
 
 		<table
@@ -78,6 +78,10 @@
 			</template>
 
 		</table>
+
+		<div id="marquee" v-bind:class="{ 'marqueeHidden': resultsResponse.marquee.show == 0, 'marqueeShow': resultsResponse.marquee.show != 0 }">
+			<marquee-text :repeat="10" :duration="resultsResponse.marquee.duration">{{ resultsResponse.marquee.text }}</marquee-text>
+		</div>
 
 	</div>
 
@@ -307,6 +311,61 @@ td.col-radioDiff {
 	flex: 0 0 auto;
 }
 
+#marquee {
+	background-color: black;
+	height: 46px;
+	width: 100%;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	padding-top: 8px;
+	text-transform: uppercase;
+	font-size: 32px;
+}
+
+#marquee .marquee-text-text {
+	padding-right: 150px;
+	white-space: pre-wrap;
+}
+
+@keyframes hideMarquee {
+	0% { 
+		bottom: 0;
+	}
+
+	100% {
+		bottom: -54px;
+	}
+
+}
+
+#marquee.marqueeHidden {
+	/*display: none;*/
+	animation-duration: 1000ms;
+	animation-name: hideMarquee;
+	animation-iteration-count: 1;
+	bottom: -54px;
+}
+
+@keyframes showMarquee {
+	0% { 
+		bottom: -54px;
+	}
+
+	100% {
+		bottom: 0px;
+	}
+
+}
+
+#marquee.marqueeShow {
+	/*display: none;*/
+	animation-duration: 1000ms;
+	animation-name: showMarquee;
+	animation-iteration-count: 1;
+	bottom: 0px;
+}
+
 </style>
 
 <script>
@@ -329,6 +388,7 @@ td.col-radioDiff {
 				columnGap: 20,
 				pageSidePadding: 10,
 				pageTopPadding: 0,
+				pageBottomPadding: 60,
 
 				// Column widths
 				colOverallRank: 40,
@@ -432,7 +492,7 @@ td.col-radioDiff {
 				const fit = height => {
 					const additionalWidth = Math.max(0, tableWidth - columnWidth)
 					const overflowH = overallWidth + additionalWidth > windowWidth
-					const overflowV = columnHeight + height + this.pageTopPadding > windowHeight
+					const overflowV = columnHeight + height + this.pageTopPadding + this.pageBottomPadding > windowHeight
 
 					// Do we need another page?
 					if (!page || (overflowH && page.length > 1)) {
@@ -688,7 +748,7 @@ td.col-radioDiff {
 			classColor(str) {
 
 				var colors = [
-					"#278EF1", "#290C74", "#1FC1DA", "#1F1A13", "#0B0A64", "#22BE54", "#148488", "#1329AF", "#23C288", "#29BABF", "#040154", "#4E8A08", "#25C12D", "#5559DE", "#3A6734", "#5F0206", "#12A667", "#5B6EC1", "#53D746", "#1C7C05", "#2237C0", "#35A865", "#245831", "#350CF3", "#06205D", "#362A9D", "#5209C7", "#25B4D1", "#4D3A5E", "#0D76AE", "#12BF6C", "#38D205", "#2DE3F8", "#38F6F6", "#524647", "#2BC774", "#25EF9B", "#1F0162", "#4C7DA6", "#25D957", "#2F4D83", "#47C517", "#2FA877", "#4C49C6", "#3A38B8", "#48DF56", "#21B0C1", "#2355E2", "#3A9C56", "#1A8B5B", "#182867", "#1C331D", "#4EDCD7", "#290540", "#35AEA2", "#163AC9", "#1A1FB1", "#36B1E4", "#5BC3AD", "#25E1DD", "#2ED9B2", "#284D73", "#4BC997", "#03BBC6", "#1CBFD4", "#14E2D1", "#5654BA", "#32A36D", "#451AB1", "#293BE9", "#01BDE2", "#346A96", "#111F56", "#18BA87", "#3F4276", "#4C2544", "#19C977", "#4E6852", "#0724BE", "#2ECDC5", "#31B7D8", "#1B4B31", "#215272", "#1328CC", "#27BC07", "#15C5E8", "#3A2AC3", "#450FF8", "#1CDC86", "#23F3D8", "#41680A", "#38E47E", "#15B5B4", "#186876", "#48C105", "#4DA032", "#37039A", "#4CC0B7", "#30EBD3", "#4DF296", "#329BC8", "#34852A", "#4B70AC", "#2E2CAD", "#3929B7", "#4AD7CB", "#04454D", "#0E1F0F", "#29D608", "#299F6A", "#1A5E48", "#17D3DD", "#4E816E", "#135B42", "#167D96", "#2164B9", "#1BE0F4", "#1E516D", "#5525B9", "#554C71", "#218C1D", "#1A75FA", "#514184", "#4DE313", "#21167B", "#5E67B2", "#3281DA", "#5572F7", "#1E526B", "#3F361F", "#41FCA3", "#155B38", "#0D741C", "#0E3366", "#31DBA7", "#1937DC", "#1E2339", "#347D34", "#0F337B", "#36166D", "#3C1ED3", "#3EF069", "#3C8EA8", "#011327", "#073C33", "#04E83D", "#4694F1", "#5B7A16", "#4D9821", "#4559AB", "#03B615", "#275189", "#58C8FA", "#372BCC", "#589258", "#12F5BC", "#4B36E6", "#161191", "#06C02C", "#1C512B", "#329D86", "#1A72B5", "#04B91B", "#21EB5B", "#33D817", "#24E23F", "#5333F0", "#45C9BC", "#3E08D0", "#4BC539", "#24A610", "#4248EB", "#346C3E", "#5AA472", "#4523CD", "#4FF49B", "#248115", "#590611", "#07A234", "#29FC6E", "#20CE3E", "#3FA8C7", "#23FF9E", "#1FF411", "#21D381", "#5B6D91", "#49A6C1", "#55C621", "#2596B4", "#587C96", "#1ABA60", "#47313E", "#488BFA", "#359E7B", "#4D7611", "#2BB342", "#4F4479", "#4F8368", "#2BFB26", "#063C55", "#04F6A9", "#4B3CB2", "#0B618F", "#286EC5", "#59D6A3", "#1A89EC", "#245F0E", "#26B69A", "#215618", "#2DE732", "#3BB716", "#1DE5AB", "#04F4D1", "#38142A", "#1A1721", "#1360E4", "#0BD473", "#28DE39", "#29A17D", "#51E4D6", "#3E7AA2", "#2AD34A", "#3212D6", "#14C188", "#1626F3", "#2FA84D", "#38A901", "#278BD2", "#526613", "#4F19EB", "#2D7E46", "#0C9CB4", "#221521", "#16ADA6", "#11A1D8", "#3ADC15", "#571EEB", "#36D937", "#015DB5", "#1E3FCE", "#295D8E", "#2E8AB3", "#371643", "#3BF530", "#4E8E02", "#1E8E72", "#16467B", "#230C79", "#547F31", "#49360E", "#1E412E", "#0EEB7E", "#3C8336", "#47497B", "#54B31B", "#48456D", "#1625ED", "#32999B", "#589A5A", "#307FC5", "#060BF9", "#257142", "#3F94AA", "#48599A", "#23CAFC", "#4D3CD4", "#350BF4", "#47D3C8", "#126BD7", "#21F407", "#075791", "#5F5859", "#48A8CF", "#3483DD", "#49406C", "#5FF311", "#192695", "#21452E", "#1BDED4", "#196E92", "#0CB435", "#2ABC6F", "#4B68A8", "#0CA713", "#3BC345", "#365525", "#45841A", "#1E8260", "#3DB268", "#01A97C", "#4BEDA4", "#1C781B", "#04FB15", "#3CB3D6", "#497F69", "#2B8194", "#01734B", "#1F72A1", "#5CC056", "#4B7AE2", "#48D494", "#4177BE", "#286D24", "#112DBD", "#2ECFD6", "#4D3118", "#2457AF", "#149A79", "#23E2D2", "#14FC82", "#1C26BB", "#3BD4B5", "#2D9927", "#20996D", "#148877", "#3A6F39", "#3677E7", "#34BC56", "#1776D2", "#214987", "#2C6C57", "#5B22D6", "#1A6173", "#17A27B", "#46C9AE", "#2EDC99", "#3AFA37", "#36B193", "#488477", "#29E74E", "#212861", "#074A7F", "#496E8A", "#2EBEBC", "#333B2D", "#1FED60", "#15253F", "#2AE0E7", "#18A765", "#427876", "#2C471E", "#23EA89", "#31A7BA", "#424A90", "#188B19", "#1FA99E", "#3171FE", "#35BAF6", "#0EED5D", "#099A61", "#049FC3", "#125359", "#3FBD85", "#2A1A83", "#2C65D4", "#4836E1", "#2D2905", "#1DDDA9", "#13D0D7", "#1FAACB", "#2D4AB7", "#36F9B5", "#358973", "#54B923", "#2BDC1B", "#54E425", "#424DD9", "#490C34", "#08CBC9", "#3AC1C0", "#3CA4B1", "#426287", "#06A952", "#39DED9", "#486EE2", "#4ADE19", "#558A95", "#3976E0", "#0D2511", "#0FBA42", "#4B5292", "#324F39", "#26CA56", "#0AF92D", "#4386EE", "#23E77E", "#3553B1", "#212CE6", "#14C647", "#2BBDA5", "#023351", "#332207", "#438766", "#35AE69", "#073E6C", "#396A8A", "#41B116", "#36BA61", "#49483B", "#29AFE1"
+					"#019513", "#1DDBC2", "#1472B7", "#26D1A7", "#16BBE2", "#469A73", "#4A2287", "#3AA97E", "#5DD2B1", "#475705", "#2BA954", "#1764E9", "#141411", "#085767", "#58378D", "#0DB239", "#3AC4C8", "#25988B", "#081AA1", "#2BD4E7", "#5DEAE2", "#3ED185", "#21E3DC", "#5673E9", "#491A24", "#0E17A6", "#41C542", "#48191D", "#1421AC", "#2A1826", "#47CD67", "#3E189A", "#43E4B5", "#4FCE90", "#2C6DBE", "#1E5475", "#0A6CE6", "#1CAD91", "#217B66", "#53AA16", "#476C6E", "#46FEE9", "#17ED55", "#02288D", "#3825C4", "#424D19", "#5169A2", "#17975E", "#0340A1", "#3536B2", "#3E77BB", "#270CE5", "#4A7CF3", "#1E6E9E", "#2ECEE4", "#2540CB", "#252394", "#35DDB5", "#56C24C", "#2A6B42", "#4EA82E", "#543915", "#173AFC", "#1767B7", "#23557B", "#3D4C7A", "#29C523", "#294D31", "#3998D3", "#0AA6C5", "#1C5B35", "#5B3BE9", "#3AD62B", "#3686F8", "#1878A6", "#34A554", "#2BF79A", "#4EAABD", "#36062D", "#5983E1", "#366AB2", "#3D7528", "#56372D", "#16C6AA", "#3FA9AC", "#44B998", "#4A1BED", "#582073", "#1F4D9E", "#47328E", "#4E49F1", "#124778", "#026438", "#45E637", "#0C4652", "#405404", "#1A1B79", "#5D6583", "#3B11E5", "#46172E"
 					];
 
 				var hash = 0;

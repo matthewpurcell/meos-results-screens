@@ -48,6 +48,13 @@
 
 	include_once('functions.php');
 
+	// Variables to store the current defaults
+	$meosEventId = -1;
+	$meosMopId = -1;
+	$marqueeShow = 0;
+	$marqueeDuration = 20;
+	$marqueeText = '';
+
 	// Connect to the MeOS defaults database
 	$linkMeosDefaults = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, "meos-defaults");
 
@@ -77,19 +84,31 @@
 
 	}
 
+	// Update marquee
+	if (isset($_POST['marqueeSubmit'])) {
+
+		echo "<strong>Marquee Saved</strong>";
+
+		$marqueeShow = ( isset($_POST['marqueeShow']) ? "1" : "0" );
+		$sql = "UPDATE defaultEvents SET value = ". $marqueeShow ." WHERE property = 'marqueeShow'";
+		$res = $linkMeosDefaults->query($sql);
+
+		$marqueeDuration = $_POST['marqueeDuration'];
+		$marqueeText = $_POST['marqueeText'];
+		$sql = "UPDATE defaultEvents SET value = ". $marqueeDuration .", data = '". addslashes($marqueeText) ."' WHERE property = 'marqueeText'";
+		$res = $linkMeosDefaults->query($sql);
+
+	}
+
 	// ------------------------------
 	// Get the current default events
 	// ------------------------------
 
 	// Query the MeOS main database for a list of competitions
-	$sql = "SELECT property, value FROM defaultEvents";
+	$sql = "SELECT property, value, data FROM defaultEvents";
 
 	// Execute the query
 	$res = $linkMeosDefaults->query($sql);
-
-	// Variables to store the current defaults
-	$meosEventId = -1;
-	$meosMopId = -1;
 
 	// Loop through each property
 	while ($r = $res->fetch_assoc()) {
@@ -100,6 +119,15 @@
 
 		else if ($r['property'] == "meosMopId") {
 			$meosMopId = $r['value'];
+		}
+
+		else if ($r['property'] == "marqueeShow") {
+			$marqueeShow = $r['value'];
+		}
+
+		else if ($r['property'] == "marqueeText") {
+			$marqueeDuration = $r['value'];
+			$marqueeText = $r['data'];
 		}
 
 	}
@@ -116,7 +144,7 @@
 	$linkMeosMain = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, "MeOSMain");
 
 	// Query the MeOS main database for a list of competitions
-	$sql = "SELECT Id, Name, Date, NameId FROM oEvent ORDER BY Id";
+	$sql = "SELECT Id, Name, Date, NameId FROM oEvent";
 
 	// Execute the query
 	$res = $linkMeosMain->query($sql);
@@ -163,7 +191,7 @@
 	$linkMop = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, "meos-mop");
 
 	// Query the MOP database for a list of competitions
-	$sql = "SELECT cid, name, date FROM mopCompetition ORDER BY cid";
+	$sql = "SELECT cid, name, date FROM mopCompetition";
 
 	// Execute the query
 	$res = $linkMop->query($sql);
@@ -196,9 +224,29 @@
 	// Close the connection to the database
 	mysqli_close($linkMop);
 
-?>
+	echo "</table>";
 
-	</table>
+	// ----------------
+	// Marquee settings
+	// ----------------
+
+	$showMarqueeChecked = ($marqueeShow == 0 ? '' : 'checked');	
+
+	echo '<h1>Results Screen Marquee</h1>';
+
+	echo '<form name="marqueeForm" action="list-events.php" method="post">';
+
+	echo '<p>Show marquee: <input type="checkbox" name="marqueeShow" value="showMarquee" '. $showMarqueeChecked .'></p>';
+
+	echo '<p>Marquee duration/speed: <input type="text" name="marqueeDuration" value="' . $marqueeDuration . '"></p>';
+
+	echo '<p>Marquee text: <input type="text" style="width: 600px" name="marqueeText" value="' . $marqueeText . '"></p>';
+
+	echo '<input name="marqueeSubmit" type="submit" value="Save">';
+
+	echo '</form>';
+
+	?>
 
 	</body>
 

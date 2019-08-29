@@ -71,6 +71,9 @@
 	$meosEventId = -1;
 	$meosEventNameId = null;
 	$meosMopId = -1;
+	$marqueeShow = 0;
+	$marqueeDuration = 20;
+	$marqueeText = '';
 
 	// Loop through each property
 	while ($r = $res->fetch_assoc()) {
@@ -82,6 +85,15 @@
 
 		else if ($r['property'] == "meosMopId") {
 			$meosMopId = $r['value'];
+		}
+
+		else if ($r['property'] == "marqueeShow") {
+			$marqueeShow = $r['value'];
+		}
+
+		else if ($r['property'] == "marqueeText") {
+			$marqueeDuration = $r['value'];
+			$marqueeText = $r['data'];
 		}
 
 	}
@@ -469,8 +481,18 @@
 
 	}		
 
+
+	// Competition information
 	$competitionResults['cmpName'] = $cmpName;
 	$competitionResults['cmpDate'] = $cmpDate;
+
+	// Marquee stuff
+	$competitionResults['marquee'] = array();
+	$competitionResults['marquee']['show'] = intval($marqueeShow);
+	$competitionResults['marquee']['text'] = $marqueeText;
+	$competitionResults['marquee']['duration'] = $marqueeDuration;
+
+	// Competition results
 	$competitionResults['cmpResults'] = $fullResults;
 
 	// Calculate the hash of the competitionResults, allow the front end to track adn determine if there have been changes
