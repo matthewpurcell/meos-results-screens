@@ -223,18 +223,37 @@
 	// print_r($classToCourseArray);
 
 
-	// ---------------------------------
-	// Get each runner's official status
-	// ---------------------------------
+	// ----------------------------------------
+	// Get all cards which have been downloaded
+	// ----------------------------------------
 
 	// We need to do this so we can differentiate between runners who have finished (punched the radio finish)
 	// unit but no download yet vs. runners who have downloaded and have a confirmed, official time and correct punches
 
-	// Query the database for the courses and distances
-	$sql = "SELECT Id, Status FROM oRunner";
+	// Query the database for the card numbers of all downloaded (and not removed) cards
+	$sql = "SELECT CardNo FROM oCard WHERE Removed = 0";
 
-	// Create an associative array to hold the runner id -> status information
-	$runnerToOfficialStatusArray = array();
+	// Create an associative array to hold the card number -> true (having the card number as the key makes lookup much faster)
+	$downloadedCardsArray = array();
+
+	// Execute the query
+	$res = $linkEventDB->query($sql);
+
+	// Loop through each card
+	while ($r = $res->fetch_assoc()) {
+
+		// Add to the array
+		$downloadedCardsArray[$r['CardNo']] = true;
+
+	}
+
+	// print_r($downloadedCardsArray);
+
+	// Query the database for the runner id and their card number
+	$sql = "SELECT Id, CardNo FROM oRunner WHERE Removed = 0";
+
+	// Create an associative array to hold the runner's id -> card number
+	$runnerIdToCardArray = array();
 
 	// Execute the query
 	$res = $linkEventDB->query($sql);
@@ -242,10 +261,12 @@
 	// Loop through each runner
 	while ($r = $res->fetch_assoc()) {
 
-		// Map each runner's id to a status
-		$runnerToOfficialStatusArray[$r['Id']] = $r['Status'];
+		// Add to the array
+		$runnerIdToCardArray[$r['Id']] = $r['CardNo'];
 
 	}
+
+	// print_r($runnerIdToCardArray);
 
 	// Close the connection to the event database - note to self, we don't use the event database again from here
 	mysqli_close($linkEventDB);
@@ -367,15 +388,18 @@
 			// ...but we need to do some checking if the status is "1" OK
 			if ($r['status'] == "1") {
 
-				// Check the runner's official status from the event database
-				if (array_key_exists($r['id'], $runnerToOfficialStatusArray)) {
+				// Get the runner's card number
+				$cardNumber = $runnerIdToCardArray[$r['id']];
 
-					// Check if the status is 0
-					if ($runnerToOfficialStatusArray[$r['id']] == "0") {
+				// Check it's not null
+				if ($cardNumber != null) {
+
+					// Check if the card has NOT been downloaded
+					if (!array_key_exists($cardNumber, $downloadedCardsArray)) {
 
 						// This means that the runner has finished (as MOP gives us a status of 1) but they have
-						// not yet downloaded (as the event database status is 0) so give the runner our custom
-						// status of "100" which indicates a finish, but no download
+						// not yet downloaded so give the runner our custom status of "100" which indicates a finish,
+						// but no download
 						$resultObj['status'] = "100";
 
 					}

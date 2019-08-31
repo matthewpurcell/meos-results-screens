@@ -21,7 +21,7 @@
 					class="headingRow"
 					:style="{ height: headerRowHeight + 'px' }"
 				>
-					<th class="className" colspan="3"><span class="pillIcon" :style="{ backgroundColor: classColor(results.cls.clsName) }">{{ results.cls.clsName }} <span class="contText">{{ results.continued ? '(Cont)' : '' }}</span> <span class="classLength">{{ results.cls.length != null ? formatDistance(results.cls.length) + ' km' : '' }}</span></span></th>
+					<th class="className" colspan="3"><span class="pillIcon" :style="{ backgroundColor: classColor(results.cls.clsName) }">{{ results.cls.clsName }} <span class="contText">{{ results.continued ? '(Cont...)' : '' }}</span><div class="classMetadata"><span class="classLength">{{ results.cls.length != null ? formatDistance(results.cls.length) + ' km' : '' }}</span> &#8226; <span class="classCourse">{{ results.cls.course }}</span></div></span></th>
 					<th class="elapsedHeading" colspan="2">Total</th>
 					<th class="splitHeading" colspan="3" v-for="(n, i) in results.cls.radioCount" :key="n">Split {{ n }} - {{ results.cls.radioInfo[i].distance != null ? formatDistance(results.cls.radioInfo[i].distance) + ' km' : '' }}</th>
 					<th
@@ -49,11 +49,15 @@
 					<td class="col-club" :style="{ width: colClub + 'px' }">{{ result.club }}</td>
 
 					<td class="col-elapsedTime" :style="{ width: colElapsedTime + 'px' }">
-						<template v-if="result.finishTime == null && result.status == 0">{{ (calculateElapsedTime(result.startTime) / 10) | formatAbsoluteTime }}</template>
+						<template v-if="competitorStarted(result.startTime) == false"><span class="startTimeDisplay">{{ (result.startTime / 10) | formatStartTime }}</span></template>
+						<template v-else-if="result.finishTime == null && result.status == 0">{{ (calculateElapsedTime(result.startTime) / 10) | formatAbsoluteTime }}</template>
 						<template v-else>{{ result.finishTime }}</template>
 					</td>
 
-					<td class="col-elapsedDiff" :style="{ width: colElapsedDiff + 'px' }">{{ result.finishDiff }}</td>
+					<td class="col-elapsedDiff" :style="{ width: colElapsedDiff + 'px' }">
+						<template v-if="competitorStarted(result.startTime) == false"><span class="startTimeDisplay">Start</span></template>
+						<template v-else>{{ result.finishDiff }}</template>
+					</td>
 
 					<!-- we need to use i (index) rather than n (value) so we start at zero-->
 					<template v-for="(n, i) in results.cls.radioCount">
@@ -89,15 +93,114 @@
 
 <style>
 
+/* roboto-100 - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 100;
+  src: local('Roboto Thin'), local('Roboto-Thin'),
+       url('/fonts/roboto-v20-latin-100.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-100.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-100italic - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-weight: 100;
+  src: local('Roboto Thin Italic'), local('Roboto-ThinItalic'),
+       url('/fonts/roboto-v20-latin-100italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-100italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-300 - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Roboto Light'), local('Roboto-Light'),
+       url('/fonts/roboto-v20-latin-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-300italic - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-weight: 300;
+  src: local('Roboto Light Italic'), local('Roboto-LightItalic'),
+       url('/fonts/roboto-v20-latin-300italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-300italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
 /* roboto-regular - latin */
 @font-face {
-	font-family: 'Roboto';
-	font-style: normal;
-	font-weight: 400;
-	src: local('Roboto'), local('Roboto-Regular'),
-		url('/fonts/roboto-v20-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-		url('/fonts/roboto-v20-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-	}
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto-Regular'),
+       url('/fonts/roboto-v20-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-italic - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Roboto Italic'), local('Roboto-Italic'),
+       url('/fonts/roboto-v20-latin-italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-500 - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'),
+       url('/fonts/roboto-v20-latin-500.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-500.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-500italic - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-weight: 500;
+  src: local('Roboto Medium Italic'), local('Roboto-MediumItalic'),
+       url('/fonts/roboto-v20-latin-500italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-500italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-700 - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Bold'), local('Roboto-Bold'),
+       url('/fonts/roboto-v20-latin-700.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-700.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-700italic - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-weight: 700;
+  src: local('Roboto Bold Italic'), local('Roboto-BoldItalic'),
+       url('/fonts/roboto-v20-latin-700italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-700italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-900 - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 900;
+  src: local('Roboto Black'), local('Roboto-Black'),
+       url('/fonts/roboto-v20-latin-900.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-900.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* roboto-900italic - latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: italic;
+  font-weight: 900;
+  src: local('Roboto Black Italic'), local('Roboto-BlackItalic'),
+       url('/fonts/roboto-v20-latin-900italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/fonts/roboto-v20-latin-900italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
 
 body {
 	background-color: #333;
@@ -195,6 +298,7 @@ th.className {
 	text-transform: uppercase;
 	padding-top: 10px;
 	padding-left: 10px;
+	font-weight: 500;
 }
 
 tr.headingRow th.className span.pillIcon {
@@ -204,9 +308,18 @@ tr.headingRow th.className span.pillIcon {
 	width: 225px;
 }
 
+th.className .classMetadata {
+	margin-top: 5px;
+	font-size: 14px;
+	font-weight: 300;
+}
+
 th.className .classLength {
+	margin-right: 5px;
+}
+
+th.className .classCourse {
 	margin-left: 5px;
-	font-size: 16px;
 }
 
 th.className .contText {
@@ -267,6 +380,7 @@ td.col-competitor {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	vertical-align: middle;
+	font-weight: 500;
 }
 
 td.col-club {
@@ -278,11 +392,21 @@ td.col-elapsedTime {
 	vertical-align: middle;
 }
 
+td.col-elapsedTime .startTimeDisplay {
+	color: #d18400;
+	font-weight: 300;
+}
+
 td.col-elapsedDiff {
 	text-align: left;
 	font-size: 12px;
 	vertical-align: middle;
 	padding-top: 2px;
+}
+
+td.col-elapsedDiff .startTimeDisplay {
+	color: #d18400;
+	font-weight: 300;
 }
 
 td.col-radioTime {
@@ -384,7 +508,7 @@ td.col-radioDiff {
 				windowWidth: 0,
 				windowHeight: 0,
 				rowHeight: 30,
-				headerRowHeight: 56,
+				headerRowHeight: 80,
 				columnGap: 20,
 				pageSidePadding: 10,
 				pageTopPadding: 0,
@@ -648,6 +772,19 @@ td.col-radioDiff {
 
 			},
 
+			formatStartTime: function(t) {
+
+				var h, m, s;
+
+				if (t > 3600) {
+					h = Math.floor(t/3600).toString();
+					m = Math.floor((t/60)%60).toString().padStart(2, '0');
+					s = Math.floor(t%60).toString().padStart(2, '0');
+					return `${h}:${m}:${s}`;
+				}
+
+			},
+
 		},
 
 		created () {
@@ -689,6 +826,7 @@ td.col-radioDiff {
 
 			// Calculates the current elapsed time for a competitor, based on their startTime
 			calculateElapsedTime(startTime) {
+
 				// Time of day in 10ths of seconds
 				const { now } = this;
 				const currentTimeSecs = (now.getSeconds() + (60 * now.getMinutes()) + (60 * 60 * now.getHours())) * 10;
@@ -706,6 +844,29 @@ td.col-radioDiff {
 
 				// Otherwise, return null
 				return null;
+
+			},
+
+			// Returns whether a competitor has started yet or not
+			competitorStarted(startTime) {
+
+				// Number of seconds since midnight
+				const { now } = this;
+				const currentTimeSecs = (now.getSeconds() + (60 * now.getMinutes()) + (60 * 60 * now.getHours())) * 10;
+
+				// Calculate elapsed running time
+				const elapsedRunningTime = currentTimeSecs - startTime;
+
+				// Check that it's positive
+				if (elapsedRunningTime > 0) {
+
+					// Return true
+					return true;
+
+				}
+
+				// Otherwise, return false
+				return false;
 
 			},
 
@@ -748,7 +909,7 @@ td.col-radioDiff {
 			classColor(str) {
 
 				var colors = [
-					"#019513", "#1DDBC2", "#1472B7", "#26D1A7", "#16BBE2", "#469A73", "#4A2287", "#3AA97E", "#5DD2B1", "#475705", "#2BA954", "#1764E9", "#141411", "#085767", "#58378D", "#0DB239", "#3AC4C8", "#25988B", "#081AA1", "#2BD4E7", "#5DEAE2", "#3ED185", "#21E3DC", "#5673E9", "#491A24", "#0E17A6", "#41C542", "#48191D", "#1421AC", "#2A1826", "#47CD67", "#3E189A", "#43E4B5", "#4FCE90", "#2C6DBE", "#1E5475", "#0A6CE6", "#1CAD91", "#217B66", "#53AA16", "#476C6E", "#46FEE9", "#17ED55", "#02288D", "#3825C4", "#424D19", "#5169A2", "#17975E", "#0340A1", "#3536B2", "#3E77BB", "#270CE5", "#4A7CF3", "#1E6E9E", "#2ECEE4", "#2540CB", "#252394", "#35DDB5", "#56C24C", "#2A6B42", "#4EA82E", "#543915", "#173AFC", "#1767B7", "#23557B", "#3D4C7A", "#29C523", "#294D31", "#3998D3", "#0AA6C5", "#1C5B35", "#5B3BE9", "#3AD62B", "#3686F8", "#1878A6", "#34A554", "#2BF79A", "#4EAABD", "#36062D", "#5983E1", "#366AB2", "#3D7528", "#56372D", "#16C6AA", "#3FA9AC", "#44B998", "#4A1BED", "#582073", "#1F4D9E", "#47328E", "#4E49F1", "#124778", "#026438", "#45E637", "#0C4652", "#405404", "#1A1B79", "#5D6583", "#3B11E5", "#46172E"
+					"#019513", "#1DDBC2", "#1472B7", "#26D1A7", "#16BBE2", "#469A73", "#4A2287", "#3AA97E", "#5DD2B1", "#475705", "#2BA954", "#1764E9", "#141411", "#085767", "#58378D", "#0DB239", "#3AC4C8", "#25988B", "#081AA1", "#26adbd", "#45b5af", "#3ED185", "#21E3DC", "#5673E9", "#491A24", "#0E17A6", "#41C542", "#48191D", "#1421AC", "#2A1826", "#47CD67", "#3E189A", "#10b383", "#4FCE90", "#2C6DBE", "#1E5475", "#0A6CE6", "#1CAD91", "#217B66", "#53AA16", "#476C6E", "#72a8a2", "#17ED55", "#02288D", "#3825C4", "#424D19", "#5169A2", "#17975E", "#0340A1", "#3536B2", "#3E77BB", "#270CE5", "#4A7CF3", "#1E6E9E", "#11bcd4", "#2540CB", "#252394", "#35DDB5", "#56C24C", "#2A6B42", "#4EA82E", "#543915", "#173AFC", "#1767B7", "#23557B", "#3D4C7A", "#29C523", "#294D31", "#3998D3", "#0AA6C5", "#1C5B35", "#5B3BE9", "#3AD62B", "#3686F8", "#1878A6", "#34A554", "#26bd78", "#4EAABD", "#36062D", "#5983E1", "#366AB2", "#3D7528", "#56372D", "#16C6AA", "#3FA9AC", "#44B998", "#4A1BED", "#582073", "#1F4D9E", "#47328E", "#4E49F1", "#124778", "#026438", "#45E637", "#0C4652", "#405404", "#1A1B79", "#5D6583", "#3B11E5", "#46172E"
 					];
 
 				var hash = 0;
