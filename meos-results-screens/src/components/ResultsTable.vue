@@ -38,8 +38,8 @@
 				>
 
 					<td class="col-overallRank" :style="{ width: colOverallRank + 'px' }">
-						<font-awesome-icon v-if="result.status == 0 && statusZero(result) == 'running'" icon="running" class="pillIcon running" />
-						<font-awesome-icon v-else-if="result.status == 0 && statusZero(result) == 'pending'" icon="ellipsis-h" />
+						<font-awesome-icon v-if="result.startTime > 0 && result.status == 0 && statusZero(result) == 'running'" icon="running" class="pillIcon running" />
+						<font-awesome-icon v-else-if="(result.status == 0 && statusZero(result) == 'pending') || (result.startTime <= 0 && result.status == 0)" icon="ellipsis-h" />
 						<template v-else-if="result.status == 1"><span class="pillIcon finisher">{{ result.finishRank }}</span></template>
 						<template v-else-if="result.status == 100"><span class="pillIcon finisher">{{ result.finishRank }}</span></template>
 						<template v-else><span class="pillIcon nonfinisher">{{ statusToRank[result.status] }}</span></template>
@@ -49,8 +49,8 @@
 					<td class="col-club" :style="{ width: colClub + 'px' }">{{ result.club }}</td>
 
 					<td class="col-elapsedTime" :style="{ width: colElapsedTime + 'px' }">
-						<template v-if="competitorStarted(result.startTime) == false"><span class="startTimeDisplay">{{ (result.startTime / 10) | formatStartTime }}</span></template>
-						<template v-else-if="result.finishTime == null && result.status == 0">{{ (calculateElapsedTime(result.startTime) / 10) | formatAbsoluteTime }}</template>
+						<template v-if="result.startTime > 0 && competitorStarted(result.startTime) == false"><span class="startTimeDisplay">{{ (result.startTime / 10) | formatStartTime }}</span></template>
+						<template v-else-if="result.startTime > 0 && result.finishTime == null && result.status == 0">{{ (calculateElapsedTime(result.startTime) / 10) | formatAbsoluteTime }}</template>
 						<template v-else>{{ result.finishTime }}</template>
 					</td>
 
