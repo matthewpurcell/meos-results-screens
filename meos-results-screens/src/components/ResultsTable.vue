@@ -908,10 +908,6 @@ td.col-radioDiff {
 			// Returns a colour for a given string, based upon the string's hash
 			classColor(str) {
 
-				var colors = [
-					"#019513", "#1DDBC2", "#1472B7", "#26D1A7", "#16BBE2", "#469A73", "#4A2287", "#3AA97E", "#5DD2B1", "#475705", "#2BA954", "#1764E9", "#141411", "#085767", "#58378D", "#0DB239", "#3AC4C8", "#25988B", "#081AA1", "#26adbd", "#45b5af", "#3ED185", "#21E3DC", "#5673E9", "#491A24", "#0E17A6", "#41C542", "#48191D", "#1421AC", "#2A1826", "#47CD67", "#3E189A", "#10b383", "#4FCE90", "#2C6DBE", "#1E5475", "#0A6CE6", "#1CAD91", "#217B66", "#53AA16", "#476C6E", "#72a8a2", "#17ED55", "#02288D", "#3825C4", "#424D19", "#5169A2", "#17975E", "#0340A1", "#3536B2", "#3E77BB", "#270CE5", "#4A7CF3", "#1E6E9E", "#11bcd4", "#2540CB", "#252394", "#35DDB5", "#56C24C", "#2A6B42", "#4EA82E", "#543915", "#173AFC", "#1767B7", "#23557B", "#3D4C7A", "#29C523", "#294D31", "#3998D3", "#0AA6C5", "#1C5B35", "#5B3BE9", "#3AD62B", "#3686F8", "#1878A6", "#34A554", "#26bd78", "#4EAABD", "#36062D", "#5983E1", "#366AB2", "#3D7528", "#56372D", "#16C6AA", "#3FA9AC", "#44B998", "#4A1BED", "#582073", "#1F4D9E", "#47328E", "#4E49F1", "#124778", "#026438", "#45E637", "#0C4652", "#405404", "#1A1B79", "#5D6583", "#3B11E5", "#46172E"
-					];
-
 				var hash = 0;
 
 				if (str.length === 0) return hash;
@@ -921,9 +917,11 @@ td.col-radioDiff {
 					hash = hash & hash;
 				}
 
-				hash = ((hash % colors.length) + colors.length) % colors.length;
+				const h = Math.abs(hash) % 360;
+				const s = Math.abs(hash) % 100;
+				const l = (Math.abs(hash) % 25) + 20;
 
-				return colors[hash];
+				return `hsl(${h}, ${s}%, ${l}%)`;
 
 			},
 
