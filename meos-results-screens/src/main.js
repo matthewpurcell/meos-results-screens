@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
+import router from './router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBroadcastTower, faRunning, faEllipsisH } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -14,5 +15,7 @@ Vue.component('marquee-text', MarqueeText)
 Vue.config.productionTip = false
 
 new Vue({
+  el: '#app',
+  router,
   render: h => h(App)
-}).$mount('#app')
+})

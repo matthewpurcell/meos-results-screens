@@ -502,7 +502,7 @@ td.col-radioDiff {
 		data() {
 			return {
 				now: new Date(),
-				pageNum: +new URLSearchParams(window.location.search).get('page') || 0,
+				pageNum: parseInt(this.$route.params.page) || 0,
 				resultsResponse: null,
 
 				windowWidth: 0,
