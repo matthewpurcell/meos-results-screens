@@ -1,7 +1,7 @@
 <template>
 
 	<div v-if="pages[pageNum]" 
-	class="columns"
+	class="columns resultsScreen"
 	:style="{ paddingLeft: pageSidePadding + 'px', paddingRight: pageSidePadding + 'px', paddingTop: pageTopPadding + 'px', paddingBottom: pageBottomPadding + 'px' }"
 	>
 
@@ -91,7 +91,7 @@
 
 </template>
 
-<style>
+<style scoped>
 
 /* roboto-100 - latin */
 @font-face {
@@ -202,7 +202,7 @@
        url('/fonts/roboto-v20-latin-900italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
-body {
+div.resultsScreen {
 	background-color: #333;
 	color: #eee;
 	font-family: Roboto;
@@ -495,7 +495,7 @@ td.col-radioDiff {
 <script>
 
 	import meosResultsApi from '@/meos-results-api'
-	import FlashCell from '@/components/FlashCell.vue'
+	import FlashCell from '@/components/ResultsScreen/FlashCell.vue'
 
 	export default {
 
@@ -821,7 +821,7 @@ td.col-radioDiff {
 			},
 
 			async refreshResults () {
-				this.resultsResponse = await meosResultsApi.getResults()
+				this.resultsResponse = await meosResultsApi.getResultsScreen()
 			},
 
 			// Calculates the current elapsed time for a competitor, based on their startTime

@@ -1,20 +1,32 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import ResultsTable from '@/components/ResultsTable'
+import ResultsTable from '@/components/ResultsScreen/ResultsTable'
+import SplitControl from '@/components/BroadcastGraphics/SplitControl'
+import OverallStandings from '@/components/BroadcastGraphics/OverallStandings'
 
 Vue.use(Router)
 
 export default new Router({
   routes: [
-  	{
-      path: '/ResultsScreens',
+    {
+      path: '/ResultsScreen',
       name: 'ResultsTable',
       component: ResultsTable
     },
     {
-      path: '/ResultsScreens/:page',
+      path: '/ResultsScreen/:page',
       name: 'ResultsTablePage',
       component: ResultsTable
+    },
+    {
+      path: '/SplitControl/:competitorId/:radioId',
+      name: 'SplitControl',
+      component: SplitControl
+    },
+    {
+      path: '/OverallStandings',
+      name: 'OverallStandings',
+      component: OverallStandings
     }
   ]
 })
