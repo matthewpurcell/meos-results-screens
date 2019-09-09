@@ -98,6 +98,59 @@
 	}
 
 
+	// ------------------------------------------
+	// Get the course information for all classes
+	// ------------------------------------------
+
+	// Connect to the actual MeOS event database for this event
+	$linkEventDB = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, $meosEventNameId);
+
+	// Query the database for the courses and distances
+	$sql = "SELECT Id, Name, Length FROM oCourse";
+
+	// Create an associative array to hold the course information
+	$courseArray = array();
+
+	// Execute the query
+	$res = $linkEventDB->query($sql);
+
+	// Loop through each course
+	while ($r = $res->fetch_assoc()) {
+
+		// Create a course object
+		$courseObject = array();
+		$courseObject["id"] = $r['Id'];
+		$courseObject["name"] = $r['Name'];
+		$courseObject["length"] = $r['Length'];
+
+		// Add the course to the courseArray
+		$courseArray[$r['Id']] = $courseObject;
+
+	}
+
+	// print_r($courseArray);
+
+	// Get the classes so they can be mapped to courses
+	$sql = "SELECT Id, Name, Course FROM oClass";
+
+	// Create an associative array to hold the class information
+	$classToCourseArray = array();
+
+	// Execute the query
+	$res = $linkEventDB->query($sql);
+
+	// Loop through each class
+	while ($r = $res->fetch_assoc()) {
+
+		// Map each class to a course
+		$classToCourseArray[$r['Id']] = $r['Course'];
+
+	}
+
+	// Close the connection to the event database - note to self, we don't use the event database again from here
+	mysqli_close($linkEventDB);
+
+
 	// ---------------------------------------------
 	// Loop through each class and build the results
 	// ---------------------------------------------
@@ -161,10 +214,15 @@
 
 		}
 
+		// Get the course id for this class
+		$courseId = $classToCourseArray[$clsid];
+
 		// Create an object for this class
 		$clsObj = array();
 		$clsObj["clsId"] = $clsid;
 		$clsObj["clsName"] = $clsname;
+		$clsObj["course"] =  $courseArray[$courseId]['name'];
+		$clsObj["length"] = $courseArray[$courseId]['length'];
 		$clsObj["clsResults"] = $rows;
 
 		// Add to the fullResults object

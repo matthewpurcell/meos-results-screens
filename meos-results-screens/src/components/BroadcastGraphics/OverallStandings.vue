@@ -2,15 +2,15 @@
 
 	<div id="greenScreen">
 
-		<template v-for="cls in currentClassData">
+		<template v-for="(cls, index) in resultsResponse.cmpResults">
 
-			<div class="clsResultsContainer" :id="cls.clsName">
+			<div class="clsResultsContainer" :id="cls.clsName" :key="cls.clsId" v-bind:class="showResultsContainer(index)">
 
 				<table class="clsResults">
 					<tr class="resultHeader">
-						<td colspan="4"><span class="className">{{ cls.clsName }}</span><span class="resultsInfo">Standings at Finish</span></td>
+						<td colspan="4"><div class="classInfo"><span class="className">{{ cls.clsName }}</span><span class="courseDistance">{{ cls.course }} • {{ formatDistance(cls.length) }} km</span></div><div class="resultsInfo">Standings at Finish</div></td>
 					</tr>
-					<tr v-for="result in cls.clsResults.slice(0,1)" class="resultRow">
+					<tr v-for="result in cls.clsResults.slice(0,1)" :key="result.competitorId" class="resultRow">
 						<td class="rank">{{ result.rank }}</td>
 						<td class="name">{{ result.name }}</td>
 						<td class="club">{{ result.club }}</td>
@@ -22,7 +22,7 @@
 
 					<table class="clsResults">
 
-						<tr v-for="result in cls.clsResults.slice(1)" class="resultRow">
+						<tr v-for="result in cls.clsResults.slice(1)" :key="result.competitorId" class="resultRow">
 
 							<td class="rank">{{ result.rank }}</td>
 							<td class="name">{{ result.name }}</td>
@@ -32,7 +32,7 @@
 						</tr>
 
 						<!-- these are the padding rows to take it to a multiple of 10, so the scroll looks nice -->
-						<tr class="paddingRow" v-for="n in calculatePaddingRows(cls.clsResults.length)">
+						<tr class="paddingRow" v-for="n in calculatePaddingRows(cls.clsResults.length)" :key="n">
 							<td></td>
 							<td></td>
 							<td></td>
@@ -62,22 +62,31 @@
 
 	.clsResultsContainer {
 		position: absolute;
-		display: none;
+		opacity: 0;
 		width: 750px;
-		height: 590px;
+		height: 545px;
 		left: 0;
 		right: 0;
 		top: 0;
 		bottom: 0;
 		margin: auto;
 		/*background-color: red;*/
+
+		-moz-transition: opacity 1.0s linear;
+		-o-transition: opacity 1.0s linear;
+		-webkit-transition: opacity 1.0s linear;
+		transition: opacity 1.0s linear;
+	}
+
+	.clsResultsContainer.show {
+		opacity: 1;
 	}
 
 	.clsResultsTableContainer {
 		position: absolute;
-		bottom: 0;	
+		top: 98px;
 		width: 750px;
-		height: 492px;
+		height: 445px;
 		overflow-y: scroll;		
 	}
 
@@ -108,13 +117,23 @@
 		padding: 0 10px;
 	}
 
-	table.clsResults tr.resultHeader td .className {
+	table.clsResults tr.resultHeader td .classInfo {
+		float: left;
 		font-weight: 500;
+		margin-top: 2px;
+	}
+
+	table.clsResults tr.resultHeader td .classInfo .courseDistance {
+		font-weight: 300;
+		padding-left: 20px;
+		font-size: 18px;
 	}
 
 	table.clsResults tr.resultHeader td .resultsInfo {
+		float: right;
 		padding-left: 30px;
 		font-weight: 300;
+		margin-top: 2px;
 	}
 
 	table.clsResults tr.paddingRow {
@@ -151,10 +170,6 @@
 		border-right: 3px solid #e65c00;
 	}
 
-	.clsResultsContainer#M21A {
-		display: block;
-	}
-
 </style>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -168,17 +183,15 @@
 		data() {
 			return {
 				resultsResponse: [],
-				currentClassData: [], // the current classes data
 				currentClassIndex: 0, // index from resultsResponse of the current class being displayed
 				currentClassPage: 1, // the current page of that class being displayed
-				firstRun: true,
 			}
 		},
 
 		created () {
 
 			// Refresh the results from the API
-			this.refreshResults()
+			this.refreshResults();
 
 			// Update the display
 			const updateLoop = () => {
@@ -196,9 +209,12 @@
 			// Start the update loop
 			updateLoop()
 
-
+			
 			// Scroll/transition the results
-			setInterval(() => {
+			var transitionInterval = setInterval(() => {
+
+				// DEBUG - stop after one scroll
+				// clearInterval(transitionInterval);
 
 				// Get a reference to the class object for the current class
 				const clsObj = this.resultsResponse.cmpResults[this.currentClassIndex];
@@ -220,7 +236,33 @@
 				// We're at the end of the pages for this class
 				else {
 
+					// Reset currentClassPage
+					this.currentClassPage = 1;
 
+					// Increment currentClassIndex
+					this.currentClassIndex += 1;
+
+					// Check if we have reached the end of the results
+					if (this.currentClassIndex >= this.resultsResponse.cmpResults.length - 1) {
+
+						// Rewind back to the first class
+						this.currentClassIndex = 0;
+
+						// Reset the scroll on all classes
+						for (var i = 0; i <= this.resultsResponse.cmpResults.length; i++) {
+							const clsName = this.resultsResponse.cmpResults[i].clsName;
+							this.$refs[clsName][0].scrollTop = 0;
+						}
+						
+					}
+
+					// Check if the next class has results to show
+					while (this.resultsResponse.cmpResults[this.currentClassIndex].clsResults == 0) {
+
+						// If not, increment currentClassIndex and check again
+						this.currentClassIndex += 1;
+
+					}
 
 				}
 
@@ -288,17 +330,6 @@
 
 				// Get the new results
 				this.resultsResponse = await meosResultsApi.getOverallStandings();
-
-				if (this.firstRun) {
-
-					this.firstRun = false;
-
-					// Put the first classes data into currentClassData					
-					this.currentClassData = this.resultsResponse.cmpResults[0];
-
-					console.log(this.currentClassData);
-
-				}
 
 			},
 
@@ -389,7 +420,27 @@
 				
 				animateScroll();
 
-			}
+			},
+
+			showResultsContainer(clsIndex) {
+
+				if (clsIndex == this.currentClassIndex)
+					return 'show';
+
+				return '';
+
+			},
+
+			// Displays the distance info (if available) for a particular radio
+			formatDistance(d) {
+
+				// Convert the distance in meters into km for display, rounded to 1dp
+				var distanceInKm = parseFloat(d / 1000).toFixed(1);
+
+				// Return the distance
+				return distanceInKm;
+
+			},
 
 		}
 
