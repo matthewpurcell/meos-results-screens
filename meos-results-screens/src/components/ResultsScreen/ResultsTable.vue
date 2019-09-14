@@ -84,7 +84,7 @@
 		</table>
 
 		<div id="marquee" v-bind:class="{ 'marqueeHidden': resultsResponse.marquee.show == 0, 'marqueeShow': resultsResponse.marquee.show != 0 }">
-			<marquee-text :repeat="10" :duration="resultsResponse.marquee.duration">{{ resultsResponse.marquee.text }}</marquee-text>
+			<marquee-text :repeat="10" :duration="parseInt(resultsResponse.marquee.duration)">{{ resultsResponse.marquee.text }}</marquee-text>
 		</div>
 
 	</div>
@@ -514,12 +514,15 @@ td.col-radioDiff {
 				pageTopPadding: 0,
 				pageBottomPadding: 60,
 
+				// Store the zoom level of the browser window
+				zoomChrome: 1,
+
 				// Column widths
-				colOverallRank: 40,
+				colOverallRank: 50,
 				colCompetitor: 180,
 				colClub: 50,
 				colElapsedTime: 65,
-				colElapsedDiff: 45,
+				colElapsedDiff: 55,
 				colRadioTime: 65,
 				colRadioRank: 30,
 				colRadioDiff: 47,
@@ -818,6 +821,21 @@ td.col-radioDiff {
 			updateWindowSize() {
 				this.windowWidth = window.innerWidth
 				this.windowHeight = window.innerHeight
+
+				// Update the browser window zoom level
+				this.zoomChrome = Math.round(((window.outerWidth) / window.innerWidth) * 100) / 100;
+				// console.log(this.zoomChrome);
+
+				this.columnGap = 20 * this.zoomChrome
+				this.colOverallRank = 50 * this.zoomChrome
+				this.colCompetitor = 180 * this.zoomChrome
+				this.colClub = 50 * this.zoomChrome
+				this.colElapsedTime = 65 * this.zoomChrome
+				this.colElapsedDiff = 55 * this.zoomChrome
+				this.colRadioTime = 65 * this.zoomChrome
+				this.colRadioRank = 30 * this.zoomChrome
+				this.colRadioDiff = 47 * this.zoomChrome
+
 			},
 
 			async refreshResults () {

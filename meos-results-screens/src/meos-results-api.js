@@ -24,5 +24,11 @@ export default {
   },
   getOverallStandings () {
     return this.execute('get', `/standings-api.php`)
-  }
+  },
+  getLatestPunches () {
+    return this.execute('get', `/latest-punches-api.php`)
+  },
+  getLatestPunchesForRadio (radioId) {
+    return this.execute('get', `/latest-punches-api.php?radioId=${radioId}`)
+  },
 }

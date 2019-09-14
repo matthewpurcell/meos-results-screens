@@ -2,31 +2,47 @@
 
 	<div id="greenScreen">
 
-		<table id="splitResults">
+		<div id="graphicsContainer">
 
-			<tr v-for="result in resultsToDisplay" v-if="result != null" v-bind:key="result.competitorId" v-bind:class="{'highlightCompetitor' : result.competitorId == competitorId}">
-				<td class="rank">{{ result.rank }} </td>
-				<td class="name">{{ result.name }}</td>
-				<td class="club">{{ result.club }}</td>
-				<td class="time" v-if="result.diff != null && result.diff != 0">{{ result.diff | formatAbsoluteDiff }}</td> <!-- punched, not the leader -->
-				<td class="time" v-else-if="result.diff == 0">{{ result.radioTime | formatAbsoluteTime }}</td> <!-- punched, the leader -->
-				<td class="time" v-else-if="calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) == 0">0:00</td> <!-- not punched, still going. this gets around the filter not correctly printing 0:00 -->
-				<td class="time" v-else>{{ calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) | formatAbsoluteDiff }}</td> <!-- not punched, still going -->
-			</tr>
+			<table id="splitResults" v-bind:class="{ show : showSplits }">
 
-			<tr v-else>
-				<td class="rank"></td>
-				<td class="name"></td>
-				<td class="club"></td>
-				<td class="time"></td>
-			</tr>
+				<tr v-for="result in resultsToDisplay" v-if="result != null" v-bind:key="result.competitorId" v-bind:class="{'highlightCompetitor' : result.competitorId == competitorId}">
+					<td class="rank">{{ result.rank }} </td>
+					<td class="name">{{ result.name }}</td>
+					<td class="club">{{ result.club }}</td>
+					<td class="time" v-if="result.diff != null && result.diff != 0">{{ result.diff | formatAbsoluteDiff }}</td> <!-- punched, not the leader -->
+					<td class="time" v-else-if="result.diff == 0">{{ result.radioTime | formatAbsoluteTime }}</td> <!-- punched, the leader -->
+					<td class="time" v-else-if="calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) == 0">0:00</td> <!-- not punched, still going. this gets around the filter not correctly printing 0:00 -->
+					<td class="time" v-else>{{ calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) | formatAbsoluteDiff }}</td> <!-- not punched, still going -->
+				</tr>
 
-			<tr class="radioInfo">
-				<td colspan="3"><span class="className">{{ resultsResponse.competitor.clsName }}</span><span class="radioDetails">{{ resultsResponse.radioInfo.radioName }} &mdash; {{ formatDistance(resultsResponse.radioInfo.distance) }} km {{ (resultsResponse.radioInfo.radioName == "Finish" ? '' : '(' + resultsResponse.radioInfo.percentage + '%)') }}</span></td>
-				<td></td>
-			</tr>
+				<tr v-else>
+					<td class="rank"></td>
+					<td class="name"></td>
+					<td class="club"></td>
+					<td class="time"></td>
+				</tr>
 
-		</table>
+			</table>
+
+			<table id="radioInfo" v-bind:class="{ show : showSplits }">
+				<tr>
+					<td>
+						<span class="className">{{ resultsResponse.competitor.clsName }}</span>
+						<span class="radioDetails">{{ resultsResponse.radioInfo.radioName }} &mdash; {{ formatDistance(resultsResponse.radioInfo.distance) }} km {{ (resultsResponse.radioInfo.radioName == "Finish" ? '' : '(' + resultsResponse.radioInfo.percentage + '%)') }}</span>
+					</td>
+				</tr>
+			</table>
+
+			<table id="runnerInfo" v-bind:class="{ show : showSplits == false }">				
+				<tr>
+					<td class="name">{{ resultsResponse.competitor.name }}</td>
+					<td class="class">{{ resultsResponse.competitor.clsName }}</td>
+					<td class="time">{{ calculateElapsedTime(resultsResponse.competitor.startTime) | formatAbsoluteTime }}</td>
+				</tr>
+			</table>
+
+		</div>
 
 	</div>
 
@@ -41,24 +57,43 @@
 		position: relative;
 	}
 
-	#splitResults {
-		font-family: Roboto;
-		font-size: 22px;
+
+
+	#graphicsContainer {
+		/*background-color: red;*/
 		position: absolute;
 		bottom: 100px;
 		left: 100px;
+		width: 550px;
+		height: 198px;
+		overflow: hidden;
+	}
+
+
+
+	#splitResults, #radioInfo, #runnerInfo {
+		font-family: Roboto;
+		font-size: 22px;		
 		border-collapse: separate;
 		border-spacing: 0 4px;
+	}
+
+
+
+	#splitResults {
+		position: absolute;
+		top: 198px;
+		transition: top 1.0s ease-in-out;
+	}
+
+	#splitResults.show {
+		top: 0px;
 	}
 
 	#splitResults tr {
 		height: 45px;
 		background-color: white;
 	}
-
-	/*#splitResults tr.highlightCompetitor {
-		outline: 3px solid gold;
-	}*/
 
 	#splitResults tr td.rank {
 		width: 45px;
@@ -91,22 +126,89 @@
 		border-right: 3px solid #e65c00;
 	}
 
-	#splitResults tr.radioInfo td {
+
+
+	#radioInfo {
+		width: 550px;
+		position: absolute;
+		bottom: -5px;
+		opacity: 0;
+		transition: opacity 1.0s linear;
+	}
+
+	#radioInfo.show {
+		opacity: 1;
+	}
+
+	#radioInfo tr {
+		height: 45px;
+	}
+
+	#radioInfo tr td {
+		height: 45px;
 		text-transform: uppercase;
 		padding: 0 10px;
+		padding-top: 2px;
 		background-color: #578a84;
 		color: white;
 		border-right: 3px solid #578a84;
 		border-left: 3px solid #578a84;
+		background-image: url('/images/orienteering-australia.png');
+		background-size: 175px auto;
+		background-position: center right;
+		background-repeat: no-repeat;
 	}
 
-	#splitResults tr.radioInfo td .className {
+	#radioInfo tr td .className {
 		font-weight: 600;
 	}
 
-	#splitResults tr.radioInfo td .radioDetails {
+	#radioInfo tr td .radioDetails {
 		padding-left: 15px;
 		font-weight: 400;
+	}
+
+
+
+	#runnerInfo {
+		width: 550px;
+		position: absolute;
+		bottom: -5px;
+		opacity: 0;
+		transition: opacity 1.0s linear;
+	}
+
+	#runnerInfo.show {
+		opacity: 1;
+	}
+
+	#runnerInfo tr {
+		height: 45px;
+	}
+
+	#runnerInfo tr td.name {
+		width: 300px;
+		text-transform: uppercase;
+		font-weight: 600;
+		padding: 0 10px;
+		background-color: white;
+	}
+
+	#runnerInfo tr td.class {
+		width: 100px;
+		text-align: right;
+		padding-right: 20px;
+		background-color: white;
+	}
+
+	#runnerInfo tr td.time {
+		width: 100px;
+		text-align: right;
+		padding-right: 7px;
+		font-weight: 500;
+		background-color: #e65c00;
+		color: white;
+		border-right: 3px solid #e65c00;
 	}
 
 </style>
@@ -125,6 +227,7 @@
 				resultsResponse: [],
 				resultsToDisplay: [], // three element array
 				refreshTimer: '',
+				showSplits: false
 			}
 		},
 
@@ -150,6 +253,10 @@
 			}
 
 			updateLoop()
+
+			setTimeout(() => {
+				this.showSplits = true;
+			}, 5000)
 
 		},
 
@@ -441,7 +548,7 @@
 					// not absolute time
 					const elapsedRunningTime = currentTimeSecs - competitorStartTime;
 
-					console.log(elapsedRunningTime);
+					// console.log(elapsedRunningTime);
 
 					// Return the time
 					return elapsedRunningTime;

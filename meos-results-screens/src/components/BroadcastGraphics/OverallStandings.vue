@@ -71,10 +71,6 @@
 		bottom: 0;
 		margin: auto;
 		/*background-color: red;*/
-
-		-moz-transition: opacity 1.0s linear;
-		-o-transition: opacity 1.0s linear;
-		-webkit-transition: opacity 1.0s linear;
 		transition: opacity 1.0s linear;
 	}
 
@@ -172,8 +168,6 @@
 
 </style>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-
 <script>
 
 	import meosResultsApi from '@/meos-results-api'
@@ -211,7 +205,7 @@
 
 			
 			// Scroll/transition the results
-			var transitionInterval = setInterval(() => {
+			setInterval(() => {
 
 				// DEBUG - stop after one scroll
 				// clearInterval(transitionInterval);
@@ -347,8 +341,6 @@
 					// not absolute time
 					const elapsedRunningTime = currentTimeSecs - competitorStartTime;
 
-					console.log(elapsedRunningTime);
-
 					// Return the time
 					return elapsedRunningTime;
 
@@ -428,17 +420,6 @@
 					return 'show';
 
 				return '';
-
-			},
-
-			// Displays the distance info (if available) for a particular radio
-			formatDistance(d) {
-
-				// Convert the distance in meters into km for display, rounded to 1dp
-				var distanceInKm = parseFloat(d / 1000).toFixed(1);
-
-				// Return the distance
-				return distanceInKm;
 
 			},
 

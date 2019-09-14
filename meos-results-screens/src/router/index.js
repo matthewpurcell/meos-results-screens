@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import ResultsTable from '@/components/ResultsScreen/ResultsTable'
 import SplitControl from '@/components/BroadcastGraphics/SplitControl'
 import OverallStandings from '@/components/BroadcastGraphics/OverallStandings'
-
+import LatestPunches from '@/components/BroadcastGraphics/LatestPunches'
 Vue.use(Router)
 
 export default new Router({
@@ -27,6 +27,11 @@ export default new Router({
       path: '/OverallStandings',
       name: 'OverallStandings',
       component: OverallStandings
+    },
+    {
+      path: '/LatestPunches/:radioId?',
+      name: 'LatestPunches',
+      component: LatestPunches
     }
   ]
 })
