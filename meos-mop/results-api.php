@@ -128,8 +128,6 @@
 	// Get the leg distances (if available) for all courses
 	// ----------------------------------------------------
 
-	// TODO: Figure out which database to use based on the competition
-
 	// Connect to the actual MeOS event database for this event
 	$linkEventDB = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, $meosEventNameId);
 

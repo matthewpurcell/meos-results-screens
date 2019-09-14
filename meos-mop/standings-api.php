@@ -16,9 +16,9 @@
 	$radioId = null;
 
 	// Update the variables
-	if (isset($_GET['radioId'])) {
+	/*if (isset($_GET['radioId'])) {
 		$radioId = $_GET['radioId'];
-	}
+	}*/
 
 
 	// ------------------------------------------------------
