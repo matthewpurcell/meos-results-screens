@@ -231,7 +231,7 @@
 				if (this.currentClassPage < totalPages) {
 
 					// Scroll to the next page
-					this.scrollNextResultsPage(clsObj.clsName);
+					this.scrollNextResultsPage(clsObj.clsName, this.currentClassPage);
 
 					// Increment currentClassPage
 					this.currentClassPage += 1;
@@ -390,7 +390,7 @@
 
 			},
 
-			scrollNextResultsPage(clsName) {
+			scrollNextResultsPage(clsName, currentPage) {
 
 				//t = current time
 				//b = start value
@@ -404,7 +404,12 @@
 				};
 
 				var element = this.$refs[clsName][0];
+
 				var to = 441;
+				if (currentPage > 1) {
+					to = -((currentPage - 2) * 441);
+				}
+
 				var duration = 600;
 
 				var start = element.scrollTop,

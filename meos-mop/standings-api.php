@@ -164,7 +164,7 @@
 		if ($radioId == null) {
 
 			$sql = "WITH bestTimeCte AS (
-				SELECT MIN(rt) minRt FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $clsid ." AND rt > 0
+				SELECT MIN(rt) minRt FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $clsid ." AND rt > 0 AND stat = 1
 			)
 
 			SELECT competitor.id, competitor.rt, competitor.name AS competitorName, org.name AS clubName, 
@@ -184,7 +184,7 @@
 
 			LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND competitor.cid = org.cid
 
-			WHERE competitor.cid = ". $meosMopId ." AND competitor.cls = ". $clsid ." AND competitor.rt > 0
+			WHERE competitor.cid = ". $meosMopId ." AND competitor.cls = ". $clsid ." AND competitor.rt > 0 AND competitor.stat = 1
 
 			ORDER BY competitor.rt";
 
