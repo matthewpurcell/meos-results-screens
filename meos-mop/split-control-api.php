@@ -215,10 +215,10 @@
 	if ($radioId == "FINISH") {
 
 		$sql = "WITH bestTimeCte AS (
-			SELECT MIN(rt) minRt FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $competitorInfo['clsId'] ." AND rt > 0
+			SELECT MIN(rt) minRt FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $competitorInfo['clsId'] ." AND rt > 0 AND stat = 1
 		)
 
-		SELECT competitor.id, competitor.rt, competitor.name AS competitorName, org.name AS clubName, 
+		SELECT competitor.id, competitor.rt, competitor.name AS competitorName, org.name AS clubName,
 			competitor.rt - (SELECT minRt FROM bestTimeCte) as diff,
 			CASE 
 			    WHEN competitor.rt IS NOT NULL THEN RANK() OVER ( PARTITION 
@@ -235,7 +235,7 @@
 
 		LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND competitor.cid = org.cid
 
-		WHERE competitor.cid = ". $meosMopId ." AND competitor.cls = ". $competitorInfo['clsId'] ." AND competitor.rt > 0
+		WHERE competitor.cid = ". $meosMopId ." AND competitor.cls = ". $competitorInfo['clsId'] ." AND competitor.rt > 0 AND competitor.stat = 1
 
 		ORDER BY competitor.rt";
 
