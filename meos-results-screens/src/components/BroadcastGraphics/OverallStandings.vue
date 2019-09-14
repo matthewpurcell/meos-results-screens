@@ -10,7 +10,7 @@
 					<tr class="resultHeader">
 						<td colspan="4"><div class="classInfo"><span class="className">{{ cls.clsName }}</span><span class="courseDistance">{{ cls.course }} • {{ formatDistance(cls.length) }} km</span></div><div class="resultsInfo">Standings at Finish</div></td>
 					</tr>
-					<tr v-for="result in cls.clsResults.slice(0,1)" :key="result.competitorId" class="resultRow">
+					<tr v-for="result in cls.clsResults.slice(0,1)" :key="result.competitorId" class="resultRow firstPlace">
 						<td class="rank">{{ result.rank }}</td>
 						<td class="name">{{ result.name }}</td>
 						<td class="club">{{ result.club }}</td>
@@ -146,6 +146,11 @@
 		border-left: 3px solid #e65c00;
 	}
 
+	table.clsResults tr.resultRow.firstPlace td.rank {
+		background-color: #CFB53B;
+		border-left: 3px solid #CFB53B;
+	}
+
 	table.clsResults tr.resultRow td.name {
 		width: 450px;
 		padding-left: 10px;
@@ -154,6 +159,7 @@
 	table.clsResults tr.resultRow td.club {
 		width: 100px;
 		text-align: center;
+		font-weight: 300;
 	}
 
 	table.clsResults tr.resultRow td.time {
@@ -164,6 +170,11 @@
 		background-color: #e65c00;
 		color: white;
 		border-right: 3px solid #e65c00;
+	}
+
+	table.clsResults tr.resultRow.firstPlace td.time {
+		background-color: #CFB53B;
+		border-right: 3px solid #CFB53B;
 	}
 
 </style>
@@ -393,11 +404,11 @@
 				};
 
 				var element = this.$refs[clsName][0];
-				var to = 440;
+				var to = 441;
 				var duration = 600;
 
 				var start = element.scrollTop,
-					change = to - start,
+					change = start + to,
 					currentTime = 0,
 					increment = 20;
 
