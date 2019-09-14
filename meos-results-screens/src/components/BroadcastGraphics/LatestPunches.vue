@@ -97,7 +97,7 @@
 
 	table#headingTable td .location {
 		margin-left: 20px;
-		font-size: 28px;
+		font-size: 18px;
 		font-weight: 300;
 	}
 
@@ -160,11 +160,13 @@
 		width: 100px;
 		padding-left: 10px;
 		text-align: center;
+		font-weight: 300;
 	}
 
 	table.punchTable td.name div {
 		width: 420px;
 		padding-left: 10px;
+		font-weight: 500;
 	}
 
 	table.punchTable td.club div {

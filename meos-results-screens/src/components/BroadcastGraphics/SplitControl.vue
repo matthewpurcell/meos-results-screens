@@ -64,7 +64,7 @@
 		position: absolute;
 		bottom: 100px;
 		left: 100px;
-		width: 550px;
+		width: 640px;
 		height: 198px;
 		overflow: hidden;
 	}
@@ -73,7 +73,7 @@
 
 	#splitResults, #radioInfo, #runnerInfo {
 		font-family: Roboto;
-		font-size: 22px;		
+		font-size: 26px;		
 		border-collapse: separate;
 		border-spacing: 0 4px;
 	}
@@ -96,7 +96,7 @@
 	}
 
 	#splitResults tr td.rank {
-		width: 45px;
+		width: 60px;
 		padding-right: 3px;
 		text-align: center;
 		background-color: #e65c00;
@@ -106,18 +106,21 @@
 	}
 
 	#splitResults tr td.name {
-		width: 300px;
+		width: 360px;
 		text-transform: uppercase;
 		font-weight: 600;
 		padding: 0 10px;
 	}
 
 	#splitResults tr td.club {
-		width: 65px;
+		width: 100px;
+		text-align: center;
+		/*background-color: red;*/
+		font-weight: 300;
 	}
 
 	#splitResults tr td.time {
-		width: 100px;
+		width: 110px;
 		text-align: right;
 		padding-right: 7px;
 		font-weight: 500;
@@ -129,7 +132,7 @@
 
 
 	#radioInfo {
-		width: 550px;
+		width: 640px;
 		position: absolute;
 		bottom: -5px;
 		opacity: 0;
@@ -171,7 +174,7 @@
 
 
 	#runnerInfo {
-		width: 550px;
+		width: 640px;
 		position: absolute;
 		bottom: -5px;
 		opacity: 0;
@@ -256,7 +259,7 @@
 
 			setTimeout(() => {
 				this.showSplits = true;
-			}, 5000)
+			}, 1000)
 
 		},
 
