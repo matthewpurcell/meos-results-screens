@@ -154,6 +154,7 @@
 		color: white;
 		font-weight: 500;
 		border-left: 3px solid #e65c00;
+		box-shadow: -15px 0 15px -15px #525252 inset;
 	}
 
 	table.punchTable td.className div {
@@ -161,6 +162,7 @@
 		padding-left: 10px;
 		text-align: center;
 		font-weight: 300;
+		box-shadow: -15px 0 15px -15px #828282 inset;
 	}
 
 	table.punchTable td.name div {
@@ -174,6 +176,7 @@
 		font-size: 18px;
 		text-align: center;
 		padding-top: 11px !important;
+		box-shadow: 15px 0 15px -15px #828282 inset;
 	}
 
 	table.punchTable td.time div {
@@ -184,6 +187,7 @@
 		background-color: #e65c00;
 		color: white;
 		border-right: 3px solid #e65c00;
+		box-shadow: 15px 0 15px -15px #525252 inset;
 	}
 
 	table.punchTable td.diff div {
