@@ -925,8 +925,8 @@ td.col-radioDiff {
 				}
 
 				const h = Math.abs(hash) % 360;
-				const s = Math.abs(hash) % 100;
-				const l = (Math.abs(hash) % 25) + 20;
+				const s = Math.abs(hash) % 40 + 60;
+				const l = (Math.abs(hash) % 25) + 13;
 
 				return `hsl(${h}, ${s}%, ${l}%)`;
 
