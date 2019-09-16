@@ -514,9 +514,6 @@ td.col-radioDiff {
 				pageTopPadding: 0,
 				pageBottomPadding: 60,
 
-				// Store the zoom level of the browser window
-				zoomChrome: 1,
-
 				// Column widths
 				colOverallRank: 50,
 				colCompetitor: 180,
@@ -637,7 +634,7 @@ td.col-radioDiff {
 					// Do we need another column?
 					if (!column || overflowV) {
 						column = {
-							maxRadioCount: 0,
+							maxRadioCount: 0,  // Calculated all at once at the end
 							classes: [],
 						}
 						page.push(column)
@@ -652,7 +649,6 @@ td.col-radioDiff {
 					// Do we need another results section?
 					if (!results) {
 						results = []
-						column.maxRadioCount = Math.max(column.maxRadioCount, cls.radioCount)
 						column.classes.push({
 							cls,
 							results,
@@ -660,6 +656,7 @@ td.col-radioDiff {
 						})
 						lastCls = cls
 						columnHeight += headerRowHeight
+						overallWidth += additionalWidth
 						fit(height)
 						return
 					}
@@ -726,6 +723,13 @@ td.col-radioDiff {
 
 					if (!page.length) {
 						pages.splice(i, 1)
+					}
+				}
+				
+				// Calculate max radio count for each column
+				for (const page of pages) {
+					for (const column of page) {
+						column.maxRadioCount = Math.max(0, ...column.classes.map(c => c.cls.radioCount))
 					}
 				}
 
@@ -821,21 +825,6 @@ td.col-radioDiff {
 			updateWindowSize() {
 				this.windowWidth = window.innerWidth
 				this.windowHeight = window.innerHeight
-
-				// Update the browser window zoom level
-				this.zoomChrome = Math.round(((window.outerWidth) / window.innerWidth) * 100) / 100;
-				// console.log(this.zoomChrome);
-
-				this.columnGap = 20 * this.zoomChrome
-				this.colOverallRank = 50 * this.zoomChrome
-				this.colCompetitor = 180 * this.zoomChrome
-				this.colClub = 50 * this.zoomChrome
-				this.colElapsedTime = 65 * this.zoomChrome
-				this.colElapsedDiff = 55 * this.zoomChrome
-				this.colRadioTime = 65 * this.zoomChrome
-				this.colRadioRank = 30 * this.zoomChrome
-				this.colRadioDiff = 47 * this.zoomChrome
-
 			},
 
 			async refreshResults () {
