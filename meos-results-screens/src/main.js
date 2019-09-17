@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+import BootstrapVue from 'bootstrap-vue'
+
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBroadcastTower, faRunning, faEllipsisH } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -12,7 +14,14 @@ Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.component('marquee-text', MarqueeText)
 
+Vue.use(BootstrapVue)
+
 Vue.config.productionTip = false
+
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title
+  next()
+})
 
 new Vue({
   el: '#app',

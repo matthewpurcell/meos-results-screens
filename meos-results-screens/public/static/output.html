@@ -1,0 +1,76 @@
+<html>
+
+	<head>
+
+		<title>Graphics Output</title>
+
+		<script src="jquery-3.4.1.min.js"></script>
+
+		<style>
+
+			body {
+				padding: 0;
+				margin: 0;
+			}
+
+			iframe {
+				width: 1920px;
+				height: 1080px;
+				border: none;
+				background-color: green;
+			}
+
+		</style>
+
+	</head>
+
+	<body>
+
+		<iframe allowtransparency="true" id="graphics-frame" src="/#/LatestPunches"></iframe>
+
+		<script>
+
+			// Listen for messages
+			window.addEventListener("message", receiveMessage, false);
+
+			// Handler for received messages
+			function receiveMessage(event) {
+
+				// Decode the JSON payload into an object
+				var payloadDecoded = JSON.parse(event.data);
+
+				// Show staged event
+				if (payloadDecoded.command == "CHANGE-GRAPHIC") {
+
+					// Get the graphic name
+					const graphicName = payloadDecoded.graphicName;
+
+					if (graphicName == "showSplitControl") {
+
+						$('#graphics-frame').attr('src', '/#/SplitControl/13489/FINISH');
+
+					}
+
+					else if (graphicName == "showLatestPunches") {
+
+						$('#graphics-frame').attr('src', '/#/LatestPunches');
+						
+					}
+
+					else if (graphicName == "showOverallResults") {
+
+						$('#graphics-frame').attr('src', '/#/OverallStandings')
+						
+					}
+
+				}
+
+
+			}
+
+
+		</script>
+
+	</body>
+
+</html>

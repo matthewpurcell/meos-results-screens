@@ -405,9 +405,9 @@
 
 				var element = this.$refs[clsName][0];
 
-				var to = 441;
+				var to = 442;
 				if (currentPage > 1) {
-					to = -((currentPage - 2) * 441);
+					to = -((currentPage - 2) * 442);
 				}
 
 				var duration = 600;

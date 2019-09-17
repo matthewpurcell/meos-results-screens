@@ -103,12 +103,13 @@
 		color: white;
 		font-weight: 500;
 		border-left: 3px solid #e65c00;
+		box-shadow: -15px 0 15px -15px #525252 inset;
 	}
 
 	#splitResults tr td.name {
 		width: 360px;
 		text-transform: uppercase;
-		font-weight: 600;
+		font-weight: 500;
 		padding: 0 10px;
 	}
 
@@ -127,6 +128,7 @@
 		background-color: #e65c00;
 		color: white;
 		border-right: 3px solid #e65c00;
+		box-shadow: 15px 0 15px -15px #525252 inset;
 	}
 
 
@@ -205,13 +207,14 @@
 	}
 
 	#runnerInfo tr td.time {
-		width: 100px;
+		width: 88px;
 		text-align: right;
 		padding-right: 7px;
 		font-weight: 500;
 		background-color: #e65c00;
 		color: white;
 		border-right: 3px solid #e65c00;
+		box-shadow: 15px 0 15px -15px #525252 inset;
 	}
 
 </style>
