@@ -1,6 +1,6 @@
 <template>
 
-	<div id="app">
+	<div id="dashboard">
 
 		<b-navbar toggleable="md" type="dark" variant="dark">
 			<b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
@@ -20,7 +20,7 @@
 				<b-card no-body>
 					<b-tabs pills card>
 						<b-tab title="Latest Punches" active><p>I'm the first tab</p></b-tab>
-						<b-tab title="Split Results"><p>I'm the second tab</p></b-tab>
+						<b-tab title="Lower 3rd / Radio Split"><p>I'm the second tab</p></b-tab>
 						<b-tab title="Overall Results"><p>I'm the tab with the very, very long title</p></b-tab>
 					</b-tabs>
 				</b-card>
@@ -37,6 +37,21 @@
 	</div>	
 
 </template>
+
+<!-- https://stackoverflow.com/questions/49653931/scope-bootstrap-css-in-vue -->
+<style scoped lang="scss">
+#dashboard /deep/ {
+  @import "~bootstrap/dist/css/bootstrap.min";
+}
+</style>
+
+<style scoped>
+
+	#dashboard {
+		font-family: sans-serif;
+	}
+
+</style>
 
 <script>
 
