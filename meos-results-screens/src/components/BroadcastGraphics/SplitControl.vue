@@ -4,35 +4,39 @@
 
 		<div id="graphicsContainer">
 
-			<table id="splitResults" v-bind:class="{ show : showSplits }">
+			<template v-if="renderSplits">
 
-				<tr v-for="result in resultsToDisplay" v-if="result != null" v-bind:key="result.competitorId" v-bind:class="{'highlightCompetitor' : result.competitorId == competitorId}">
-					<td class="rank">{{ result.rank }} </td>
-					<td class="name">{{ result.name }}</td>
-					<td class="club">{{ result.club }}</td>
-					<td class="time" v-if="result.diff != null && result.diff != 0">{{ result.diff | formatAbsoluteDiff }}</td> <!-- punched, not the leader -->
-					<td class="time" v-else-if="result.diff == 0">{{ result.radioTime | formatAbsoluteTime }}</td> <!-- punched, the leader -->
-					<td class="time" v-else-if="calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) == 0">0:00</td> <!-- not punched, still going. this gets around the filter not correctly printing 0:00 -->
-					<td class="time" v-else>{{ calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) | formatAbsoluteDiff }}</td> <!-- not punched, still going -->
-				</tr>
+				<table id="splitResults" v-bind:class="{ show : showSplits }">
 
-				<tr v-else>
-					<td class="rank"></td>
-					<td class="name"></td>
-					<td class="club"></td>
-					<td class="time"></td>
-				</tr>
+					<tr v-for="result in resultsToDisplay" v-if="result != null" v-bind:key="result.competitorId" v-bind:class="{'highlightCompetitor' : result.competitorId == competitorId}">
+						<td class="rank">{{ result.rank }} </td>
+						<td class="name">{{ result.name }}</td>
+						<td class="club">{{ result.club }}</td>
+						<td class="time" v-if="result.diff != null && result.diff != 0">{{ result.diff | formatAbsoluteDiff }}</td> <!-- punched, not the leader -->
+						<td class="time" v-else-if="result.diff == 0">{{ result.radioTime | formatAbsoluteTime }}</td> <!-- punched, the leader -->
+						<td class="time" v-else-if="calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) == 0">0:00</td> <!-- not punched, still going. this gets around the filter not correctly printing 0:00 -->
+						<td class="time" v-else>{{ calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) | formatAbsoluteDiff }}</td> <!-- not punched, still going -->
+					</tr>
 
-			</table>
+					<tr v-else>
+						<td class="rank"></td>
+						<td class="name"></td>
+						<td class="club"></td>
+						<td class="time"></td>
+					</tr>
 
-			<table id="radioInfo" v-bind:class="{ show : showSplits }">
-				<tr>
-					<td>
-						<span class="className">{{ resultsResponse.competitor.clsName }}</span>
-						<span class="radioDetails">{{ resultsResponse.radioInfo.radioName }} &mdash; {{ formatDistance(resultsResponse.radioInfo.distance) }} km {{ (resultsResponse.radioInfo.radioName == "Finish" ? '' : '(' + resultsResponse.radioInfo.percentage + '%)') }}</span>
-					</td>
-				</tr>
-			</table>
+				</table>
+
+				<table id="radioInfo" v-bind:class="{ show : showSplits }">
+					<tr>
+						<td>
+							<span class="className">{{ resultsResponse.competitor.clsName }}</span>
+							<span class="radioDetails">{{ resultsResponse.radioInfo.radioName }} &mdash; {{ formatDistance(resultsResponse.radioInfo.distance) }} km {{ (resultsResponse.radioInfo.radioName == "Finish" ? '' : '(' + resultsResponse.radioInfo.percentage + '%)') }}</span>
+						</td>
+					</tr>
+				</table>
+
+			</template>
 
 			<table id="runnerInfo" v-bind:class="{ show : showSplits == false }">				
 				<tr>
@@ -233,7 +237,34 @@
 				resultsResponse: [],
 				resultsToDisplay: [], // three element array
 				refreshTimer: '',
-				showSplits: false
+				showSplits: false,
+				renderSplits: true,
+			}
+		},
+
+		watch: {
+			'$route' (to, from) {
+
+				this.competitorId = to.params.competitorId;
+				this.radioId = to.params.radioId;
+
+				if ((this.radioId == undefined) || (this.radioId == null)) {					
+					this.showSplits = false;					
+				}
+
+				else {
+					this.renderSplits = true;
+					setTimeout(() => {
+						this.showSplits = true;
+					}, 1000);
+
+				}
+
+				// Refresh from the API
+				setTimeout(() => {
+					this.refreshResults();
+				}, 1000);
+
 			}
 		},
 
@@ -259,10 +290,6 @@
 			}
 
 			updateLoop()
-
-			setTimeout(() => {
-				this.showSplits = true;
-			}, 1000)
 
 		},
 
@@ -325,10 +352,17 @@
 			async refreshResults () {
 
 				// Get the new results
-				this.resultsResponse = await meosResultsApi.getSplitResults(this.competitorId, this.radioId);
+				if ((this.radioId != undefined) && (this.radioId != null)) {
+					this.resultsResponse = await meosResultsApi.getSplitResults(this.competitorId, this.radioId);
+					this.resultsToDisplay = await this.determineDataToDisplay();
+					this.showSplits = true;
+					this.renderSplits = true;
+				}
 
-				// Refresh the data to display
-				this.resultsToDisplay = await this.determineDataToDisplay();
+				else {
+					this.resultsResponse = await meosResultsApi.getSplitResultsCompetitorOnly(this.competitorId);
+					this.renderSplits = false;
+				}
 
 			},
 

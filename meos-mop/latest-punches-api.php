@@ -214,8 +214,8 @@
 		$timestampWhereClause = ' AND UNIX_TIMESTAMP(rt_timestamp) >= ' . $timestamp . ' ';
 	}
 
-	// If no radio id has been passed in, then we do the latest punches at the finish
-	if ($radioId == null) {
+	// If no radio id has been passed in, or the radio id is FINISH, then we do the latest punches at the finish
+	if (($radioId == null) || ($radioId == "FINISH")) {
 
 		// Build the query
 		$sql = 'SELECT competitor.id, competitor.name as competitorName, competitor.cls, org.name AS clubName, competitor.rt, competitor.rt_timestamp

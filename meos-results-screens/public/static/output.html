@@ -53,14 +53,56 @@
 
 					else if (graphicName == "showLatestPunches") {
 
-						$('#graphics-frame').attr('src', '/#/LatestPunches');
+						// Get the radio id
+						var radioId = payloadDecoded.radioId;
+
+						// Create the new url
+						var newURL = '/#/LatestPunches/' + radioId;
+
+						// Show the graphics
+						$('#graphics-frame').attr('src', newURL);
 						
+					}
+
+					else if (graphicName == "showRunningTime") {
+
+						// Get the competitor and radio ids
+						var competitorId = payloadDecoded.competitorId;
+
+						// Create the new url
+						var newURL = '/#/SplitControl/' + competitorId;
+
+						// Show the graphics
+						$('#graphics-frame').attr('src', newURL);
+
+					}
+
+					else if (graphicName == "showRadioSplit") {
+
+						// Get the competitor and radio ids
+						var competitorId = payloadDecoded.competitorId;
+						var radioId = payloadDecoded.radioId;
+
+						// Create the new url
+						var newURL = '/#/SplitControl/' + competitorId + '/' + radioId;
+
+						// Show the graphics
+						$('#graphics-frame').attr('src', newURL);
+
 					}
 
 					else if (graphicName == "showOverallResults") {
 
-						$('#graphics-frame').attr('src', '/#/OverallStandings')
-						
+						// Check if we only want to show certain classes
+						if (payloadDecoded.classesToShow.length > 0) {
+							$('#graphics-frame').attr('src', `/#/OverallStandings/${payloadDecoded.classesToShow}`);
+						}
+
+						else {
+							$('#graphics-frame').attr('src', '/#/OverallStandings');
+
+						}
+
 					}
 
 				}

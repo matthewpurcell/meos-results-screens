@@ -13,22 +13,21 @@
 	// Check whether the competitor id and radio id has been passed in
 	// ---------------------------------------------------------------
 
-	$competitorId = '';
-	$radioId = '';
+	$competitorId = null;
+	$radioId = null;
 
 	// Update the variables
-	if (isset($_GET['competitorId']) && isset($_GET['radioId'])) {
-
+	if (isset($_GET['competitorId'])) {
 		$competitorId = $_GET['competitorId'];
-		$radioId = $_GET['radioId'];
-
 	}
 
-	// Return nothing if not provided
+	// Return nothing if not provided, as this is mandatory
 	else {
-
 		return;
+	}
 
+	if (isset($_GET['radioId'])) {
+		$radioId = $_GET['radioId'];
 	}
 
 	// ------------------------------------------------------
@@ -121,255 +120,258 @@
 	// Get the details for the radio controls on this course
 	// -----------------------------------------------------
 
+	if ($radioId != null) {
 
-	// ** Get all radios for this class **
+		// ** Get all radios for this class **
 
-	// Query the database, order the radios
-	$sql = "SELECT ctrl FROM mopClassControl WHERE id = " . $competitorInfo['clsId'] . " AND cid = " . $cmp . " ORDER BY ord";
+		// Query the database, order the radios
+		$sql = "SELECT ctrl FROM mopClassControl WHERE id = " . $competitorInfo['clsId'] . " AND cid = " . $cmp . " ORDER BY ord";
 
-	// Execute the query
-	$res = $linkMop->query($sql);
-	
-	// Add the radio control codes to an array
-	$radioControlCodes = [];
-	while ($r = $res->fetch_assoc()) {
-		$code = (int)$r['ctrl'];
-		array_push($radioControlCodes, $code);
-	}
-
-
-	// ** Determine the course for this class **
-
-	// Connect to the actual MeOS event database for this event
-	$linkEventDB = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, $meosEventNameId);
-
-	// Get the course for this class
-	$sql = "SELECT Course FROM oClass WHERE Id = " . $competitorInfo['clsId'];
-	$res = $linkEventDB->query($sql);
-	$r = $res->fetch_assoc();
-	$courseId = $r['Course'];
-
-
-	// ** Determine the leg distances for this course and all its controls **
-
-	// Query the database for the courses and distances
-	$sql = "SELECT Controls, Length, Legs FROM oCourse WHERE Id = " . $courseId;
-	$res = $linkEventDB->query($sql);
-	$r = $res->fetch_assoc();
-	$courseTotalLength = $r['Length'];
-
-	// Split the controls into an array
-	$controlsArray = explode(";", $r["Controls"]);
-
-	// Split the leg distances into an array
-	$legsArray = explode(";", $r["Legs"]);
-
-	// Create an associative array to store the control -> distance for the course
-	$legDistanceArray = array();
-
-	// Loop through the controlCodeArray and get the associated distance (if available)
-	for ($i = 0; $i < count($controlsArray); $i = $i + 1) {
-
-		// Control code
-		$controlCode = $controlsArray[$i];
-
-		// Check it's not empty
-		if (empty($controlCode)) {
-
-			// Deal with the final control to finish leg
-			if ($i == count($controlsArray) - 1) {
-				$controlCode = "FINISH";
-			}
-
-			else {
-				continue;
-			}
-
-		}
-
-		// Check whether the control has a corresponding leg distance
-		if ( (array_key_exists($i, $legsArray)) && (!empty($legsArray[$i])) ) {
-
-			// Control length
-			$controlLength = $legsArray[$i];
-
-			// Store the length of that control
-			$legDistanceArray[$controlCode] = $controlLength;
-
-		}
-
-	}
-
-	// Close the connection to the database
-	mysqli_close($linkEventDB);
-
-	// Array to eventually hold the radio information
-	$radioInfo = array();
-
-
-	// -------------------------------------------------------
-	// Get times of all competitors who have visited the radio
-	// -------------------------------------------------------
-
-	// Check whether we want the finish
-	if ($radioId == "FINISH") {
-
-		$sql = "WITH bestTimeCte AS (
-			SELECT MIN(rt) minRt FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $competitorInfo['clsId'] ." AND rt > 0 AND stat = 1
-		)
-
-		SELECT competitor.id, competitor.rt, competitor.name AS competitorName, org.name AS clubName,
-			competitor.rt - (SELECT minRt FROM bestTimeCte) as diff,
-			CASE 
-			    WHEN competitor.rt IS NOT NULL THEN RANK() OVER ( PARTITION 
-			BY
-			    (CASE 
-			        WHEN competitor.rt IS NOT NULL THEN 1 
-			        ELSE 0 
-			    END)
-			ORDER BY
-			    competitor.rt ) 
-			END radioRank
-
-		FROM mopCompetitor AS competitor 
-
-		LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND competitor.cid = org.cid
-
-		WHERE competitor.cid = ". $meosMopId ." AND competitor.cls = ". $competitorInfo['clsId'] ." AND competitor.rt > 0 AND competitor.stat = 1
-
-		ORDER BY competitor.rt";
-
-		// print_r($sql);
-
-		// Run the query
+		// Execute the query
 		$res = $linkMop->query($sql);
-			
-		// Store the result objects in an array
-		$rows = array();
-
-		// Loop through the results
+		
+		// Add the radio control codes to an array
+		$radioControlCodes = [];
 		while ($r = $res->fetch_assoc()) {
-
-			// Create the object
-			$resultObj = array();
-
-			// Populate with the required data
-			$resultObj['competitorId'] = $r['id'];
-			$resultObj['name'] = $r['competitorName'];
-			$resultObj['club'] = $r['clubName'];
-			$resultObj['radioTime'] = $r['rt'];
-			$resultObj['diff'] = $r['diff'];
-			$resultObj['rank'] = $r['radioRank'];
-
-			array_push($rows, $resultObj);
-
+			$code = (int)$r['ctrl'];
+			array_push($radioControlCodes, $code);
 		}
-	
-		// Radio name (the number of the split control)
-		$radioInfo["radioName"] = "Finish";
-		$radioInfo["distance"] = $courseTotalLength;
-		$radioInfo["percentage"] = "100";
 
-	}
 
-	// ...or a standard radio control
-	else {
+		// ** Determine the course for this class **
 
-		// Query the database
-		$sql = "WITH bestTimeCte AS (
-			SELECT MIN(rt) minRt FROM mopRadio WHERE ctrl = ". $radioId . " AND cid = ". $meosMopId ." AND id IN (
-				SELECT id FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $competitorInfo['clsId'] ."
-			)
-		)
+		// Connect to the actual MeOS event database for this event
+		$linkEventDB = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, $meosEventNameId);
 
-		SELECT radio.id, radio.rt, competitor.name AS competitorName, org.name AS clubName, 
-			radio.rt - (SELECT minRt FROM bestTimeCte) as diff,
-			CASE 
-			    WHEN radio.rt IS NOT NULL THEN RANK() OVER ( PARTITION 
-			BY
-			    (CASE 
-			        WHEN radio.rt IS NOT NULL THEN 1 
-			        ELSE 0 
-			    END)
-			ORDER BY
-			    radio.rt ) 
-			END radioRank
+		// Get the course for this class
+		$sql = "SELECT Course FROM oClass WHERE Id = " . $competitorInfo['clsId'];
+		$res = $linkEventDB->query($sql);
+		$r = $res->fetch_assoc();
+		$courseId = $r['Course'];
 
-		FROM mopRadio AS radio 
 
-		LEFT JOIN mopCompetitor AS competitor ON radio.id = competitor.id AND radio.cid = competitor.cid
+		// ** Determine the leg distances for this course and all its controls **
 
-		LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND competitor.cid = org.cid
+		// Query the database for the courses and distances
+		$sql = "SELECT Controls, Length, Legs FROM oCourse WHERE Id = " . $courseId;
+		$res = $linkEventDB->query($sql);
+		$r = $res->fetch_assoc();
+		$courseTotalLength = $r['Length'];
 
-		WHERE radio.cid = ". $meosMopId ." AND radio.ctrl = ". $radioId. " AND radio.id IN (
-			SELECT id FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $competitorInfo['clsId'] ."
-		)
+		// Split the controls into an array
+		$controlsArray = explode(";", $r["Controls"]);
 
-		ORDER BY radio.rt";
+		// Split the leg distances into an array
+		$legsArray = explode(";", $r["Legs"]);
 
-		// print_r($sql);
+		// Create an associative array to store the control -> distance for the course
+		$legDistanceArray = array();
 
-		// Run the query
-		$res = $linkMop->query($sql);
-			
-		// Store the result objects in an array
-		$rows = array();
+		// Loop through the controlCodeArray and get the associated distance (if available)
+		for ($i = 0; $i < count($controlsArray); $i = $i + 1) {
 
-		// Loop through the results
-		while ($r = $res->fetch_assoc()) {
+			// Control code
+			$controlCode = $controlsArray[$i];
 
-			// Create the object
-			$resultObj = array();
+			// Check it's not empty
+			if (empty($controlCode)) {
 
-			// Populate with the required data
-			$resultObj['competitorId'] = $r['id'];
-			$resultObj['name'] = $r['competitorName'];
-			$resultObj['club'] = $r['clubName'];
-			$resultObj['radioTime'] = $r['rt'];
-			$resultObj['diff'] = $r['diff'];
-			$resultObj['rank'] = $r['radioRank'];
+				// Deal with the final control to finish leg
+				if ($i == count($controlsArray) - 1) {
+					$controlCode = "FINISH";
+				}
 
-			array_push($rows, $resultObj);
-
-		}
-	
-		// Radio name (the number of the split control)
-		$radioInfo["radioName"] = "Split " . (array_search($radioId, $radioControlCodes) + 1);
-
-		// Calculate the distance as at the radio control
-
-		// Leg distance
-		$totalLegDistance = null;
-
-		// Leg percentage
-		$totalLegPercentage = null;
-
-		// Check if the control is in the control array distances (i.e. we have a distance for that leg)
-		if (array_key_exists($radioId, $legDistanceArray)) {
-
-			// Leg distance
-			$totalLegDistance = 0;
-
-			// Loop through the leg distances, adding them up until we reach that control
-			foreach ($legDistanceArray as $key => $value) {
-
-				// Update totalLegDistance
-				$totalLegDistance = $totalLegDistance + $value;
-
-				// Check if we have reached the control
-				if ($key == $radioId) {
-					break;
+				else {
+					continue;
 				}
 
 			}
 
-			// Calculate the percentage
-			$totalLegPercentage = round($totalLegDistance / ($courseTotalLength) * 100);
+			// Check whether the control has a corresponding leg distance
+			if ( (array_key_exists($i, $legsArray)) && (!empty($legsArray[$i])) ) {
+
+				// Control length
+				$controlLength = $legsArray[$i];
+
+				// Store the length of that control
+				$legDistanceArray[$controlCode] = $controlLength;
+
+			}
 
 		}
 
-		$radioInfo["distance"] = $totalLegDistance;
-		$radioInfo["percentage"] = $totalLegPercentage;
+		// Close the connection to the database
+		mysqli_close($linkEventDB);
+
+		// Array to eventually hold the radio information
+		$radioInfo = array();
+
+
+		// -------------------------------------------------------
+		// Get times of all competitors who have visited the radio
+		// -------------------------------------------------------
+
+		// Check whether we want the finish
+		if ($radioId == "FINISH") {
+
+			$sql = "WITH bestTimeCte AS (
+				SELECT MIN(rt) minRt FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $competitorInfo['clsId'] ." AND rt > 0 AND stat = 1
+			)
+
+			SELECT competitor.id, competitor.rt, competitor.name AS competitorName, org.name AS clubName,
+				competitor.rt - (SELECT minRt FROM bestTimeCte) as diff,
+				CASE 
+				    WHEN competitor.rt IS NOT NULL THEN RANK() OVER ( PARTITION 
+				BY
+				    (CASE 
+				        WHEN competitor.rt IS NOT NULL THEN 1 
+				        ELSE 0 
+				    END)
+				ORDER BY
+				    competitor.rt ) 
+				END radioRank
+
+			FROM mopCompetitor AS competitor 
+
+			LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND competitor.cid = org.cid
+
+			WHERE competitor.cid = ". $meosMopId ." AND competitor.cls = ". $competitorInfo['clsId'] ." AND competitor.rt > 0 AND competitor.stat = 1
+
+			ORDER BY competitor.rt";
+
+			// print_r($sql);
+
+			// Run the query
+			$res = $linkMop->query($sql);
+				
+			// Store the result objects in an array
+			$rows = array();
+
+			// Loop through the results
+			while ($r = $res->fetch_assoc()) {
+
+				// Create the object
+				$resultObj = array();
+
+				// Populate with the required data
+				$resultObj['competitorId'] = $r['id'];
+				$resultObj['name'] = $r['competitorName'];
+				$resultObj['club'] = $r['clubName'];
+				$resultObj['radioTime'] = $r['rt'];
+				$resultObj['diff'] = $r['diff'];
+				$resultObj['rank'] = $r['radioRank'];
+
+				array_push($rows, $resultObj);
+
+			}
+		
+			// Radio name (the number of the split control)
+			$radioInfo["radioName"] = "Finish";
+			$radioInfo["distance"] = $courseTotalLength;
+			$radioInfo["percentage"] = "100";
+
+		}
+
+		// ...or a standard radio control
+		else {
+
+			// Query the database
+			$sql = "WITH bestTimeCte AS (
+				SELECT MIN(rt) minRt FROM mopRadio WHERE ctrl = ". $radioId . " AND cid = ". $meosMopId ." AND id IN (
+					SELECT id FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $competitorInfo['clsId'] ."
+				)
+			)
+
+			SELECT radio.id, radio.rt, competitor.name AS competitorName, org.name AS clubName, 
+				radio.rt - (SELECT minRt FROM bestTimeCte) as diff,
+				CASE 
+				    WHEN radio.rt IS NOT NULL THEN RANK() OVER ( PARTITION 
+				BY
+				    (CASE 
+				        WHEN radio.rt IS NOT NULL THEN 1 
+				        ELSE 0 
+				    END)
+				ORDER BY
+				    radio.rt ) 
+				END radioRank
+
+			FROM mopRadio AS radio 
+
+			LEFT JOIN mopCompetitor AS competitor ON radio.id = competitor.id AND radio.cid = competitor.cid
+
+			LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND competitor.cid = org.cid
+
+			WHERE radio.cid = ". $meosMopId ." AND radio.ctrl = ". $radioId. " AND radio.id IN (
+				SELECT id FROM mopCompetitor WHERE cid = ". $meosMopId ." AND cls = ". $competitorInfo['clsId'] ."
+			)
+
+			ORDER BY radio.rt";
+
+			// print_r($sql);
+
+			// Run the query
+			$res = $linkMop->query($sql);
+				
+			// Store the result objects in an array
+			$rows = array();
+
+			// Loop through the results
+			while ($r = $res->fetch_assoc()) {
+
+				// Create the object
+				$resultObj = array();
+
+				// Populate with the required data
+				$resultObj['competitorId'] = $r['id'];
+				$resultObj['name'] = $r['competitorName'];
+				$resultObj['club'] = $r['clubName'];
+				$resultObj['radioTime'] = $r['rt'];
+				$resultObj['diff'] = $r['diff'];
+				$resultObj['rank'] = $r['radioRank'];
+
+				array_push($rows, $resultObj);
+
+			}
+		
+			// Radio name (the number of the split control)
+			$radioInfo["radioName"] = "Split " . (array_search($radioId, $radioControlCodes) + 1);
+
+			// Calculate the distance as at the radio control
+
+			// Leg distance
+			$totalLegDistance = null;
+
+			// Leg percentage
+			$totalLegPercentage = null;
+
+			// Check if the control is in the control array distances (i.e. we have a distance for that leg)
+			if (array_key_exists($radioId, $legDistanceArray)) {
+
+				// Leg distance
+				$totalLegDistance = 0;
+
+				// Loop through the leg distances, adding them up until we reach that control
+				foreach ($legDistanceArray as $key => $value) {
+
+					// Update totalLegDistance
+					$totalLegDistance = $totalLegDistance + $value;
+
+					// Check if we have reached the control
+					if ($key == $radioId) {
+						break;
+					}
+
+				}
+
+				// Calculate the percentage
+				$totalLegPercentage = round($totalLegDistance / ($courseTotalLength) * 100);
+
+			}
+
+			$radioInfo["distance"] = $totalLegDistance;
+			$radioInfo["percentage"] = $totalLegPercentage;
+
+		}
 
 	}
 
@@ -382,13 +384,15 @@
 	$responseArray['cmpDate'] = $cmpDate;
 
 	// Radio information
-	$responseArray['radioInfo'] = $radioInfo;
+	if ($radioId != null)
+		$responseArray['radioInfo'] = $radioInfo;
 
 	// Competitor information
 	$responseArray['competitor'] = $competitorInfo;
 
 	// Radio results
-	$responseArray['radioResults'] = $rows;
+	if ($radioId != null)
+		$responseArray['radioResults'] = $rows;
 
 	// Return the JSON
 	echo json_encode($responseArray);

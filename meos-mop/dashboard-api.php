@@ -107,44 +107,48 @@
 		$classObject['id'] = $r['id'];
 		$classObject['name'] = $r['name'];
 
-		// --------------------------------------------------
-		// Loop through and get the competitors for the class
-		// --------------------------------------------------
-
-		// Query the database for the class' competitors
-		$sql2 = "SELECT competitor.id, competitor.name, org.name as clubName, competitor.st, competitor.rt, REVERSE(SUBSTRING_INDEX(REVERSE(competitor.name), ' ', 1)) AS lastName, REPLACE(competitor.name, REVERSE(SUBSTRING_INDEX(REVERSE(competitor.name), ' ', 1)), '') AS firstName FROM mopCompetitor AS competitor
-			LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND org.cid = ". $cmp ."
-			WHERE competitor.cid = ". $cmp ." AND competitor.cls = ". $classObject['id'] ."
-			ORDER BY lastname ASC";
-
-		// Create an array to store the competitors for this class
-		$classCompetitorArray = array();
-
-		// Execute the query
-		$res2 = $linkMop->query($sql2);
-
-		// Loop through each competitor and add to the array
-		while ($r2 = $res2->fetch_assoc()) {
-
-			// Create an object to store the competitor details
-			$competitorObject = array();
-			$competitorObject['id'] = $r2['id'];
-			$competitorObject['name'] = $r2['name'];
-			$competitorObject['firstName'] = $r2['firstName'];
-			$competitorObject['lastName'] = $r2['lastName'];
-			$competitorObject['club'] = $r2['clubName'];
-			$competitorObject['startTime'] = $r2['st'];
-			$competitorObject['finishTime'] = $r2['rt'];
-
-			array_push($classCompetitorArray, $competitorObject);
-
-		}
-
-		// Add to the classObject
-		$classObject['competitors'] = $classCompetitorArray;
-
 		// Add to the classArray
 		array_push($classArray, $classObject);
+
+	}
+
+
+	// -------------------
+	// Get all competitors
+	// -------------------
+
+	// Query the database for all competitors
+	$sql = "SELECT competitor.id, competitor.name, org.name as clubName, cls.name AS className, competitor.st, competitor.rt, REVERSE(SUBSTRING_INDEX(REVERSE(competitor.name), ' ', 1)) AS lastName, REPLACE(competitor.name, REVERSE(SUBSTRING_INDEX(REVERSE(competitor.name), ' ', 1)), '') AS firstName FROM mopCompetitor AS competitor
+
+			LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND org.cid = ". $cmp ."
+
+			LEFT JOIN mopClass AS cls ON competitor.cls = cls.id AND cls.cid = ". $cmp ."
+
+			WHERE competitor.cid = ". $cmp ."
+
+			ORDER BY competitor.cls ASC, lastname ASC";
+
+	// Create an array to store the competitors
+	$competitorsArray = array();
+
+	// Execute the query
+	$res = $linkMop->query($sql);
+
+	// Loop through each competitor and add to the array
+	while ($r = $res->fetch_assoc()) {
+
+		// Create an object to store the competitor details
+		$competitorObject = array();
+		$competitorObject['id'] = $r['id'];
+		$competitorObject['name'] = $r['name'];
+		$competitorObject['firstName'] = $r['firstName'];
+		$competitorObject['lastName'] = $r['lastName'];
+		$competitorObject['club'] = $r['clubName'];
+		$competitorObject['className'] = $r['className'];
+		$competitorObject['startTime'] = $r['st'];
+		$competitorObject['finishTime'] = $r['rt'];
+
+		array_push($competitorsArray, $competitorObject);
 
 	}
 
@@ -162,6 +166,9 @@
 
 	// Class details
 	$responseArray['classes'] = $classArray;
+
+	// Competitors
+	$responseArray['competitors'] = $competitorsArray;
 
 	// Return the JSON
 	echo json_encode($responseArray);

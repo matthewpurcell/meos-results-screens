@@ -794,6 +794,12 @@ td.col-radioDiff {
 
 		},
 
+		watch: {
+			'$route' (to, from) {
+				this.pageNum = parseInt(this.$route.params.page) || 0;
+			}
+		},
+
 		created () {
 			window.addEventListener('resize', () => this.updateWindowSize())
 			this.updateWindowSize()

@@ -219,6 +219,12 @@
 			}
 		},
 
+		watch: {
+			'$route' (to, from) {
+				this.radioId = to.params.radioId;
+			}
+		},
+
 		created () {
 
 			

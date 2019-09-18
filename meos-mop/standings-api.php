@@ -9,9 +9,9 @@
 	header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 
 
-	// -------------------------------------------
-	// Check whether a radio id has been passed in
-	// -------------------------------------------
+	// ----------------------------------------
+	// Check whether params have been passed in
+	// ----------------------------------------
 
 	$radioId = null;
 
@@ -19,6 +19,16 @@
 	/*if (isset($_GET['radioId'])) {
 		$radioId = $_GET['radioId'];
 	}*/
+
+	$classList = array();
+
+	// Check for classes
+	if (isset($_GET['classList'])) {
+
+		// Split the class list into an array
+		$classList = explode(',', $_GET['classList']);
+
+	}
 
 
 	// ------------------------------------------------------
@@ -83,8 +93,14 @@
 	// Get the class details
 	// ---------------------
 
+	// Check if we only want to get certain classes
+	$classListWhereClause = '';
+	if (count($classList) > 0) {
+		$classListWhereClause = " AND id IN (" . implode(",", $classList) . ") ";
+	}
+
 	// Query the database for the class information
-	$sql = "SELECT name, id FROM mopClass WHERE cid = " . $cmp . " ORDER BY ord";
+	$sql = "SELECT name, id FROM mopClass WHERE cid = " . $cmp . $classListWhereClause . " ORDER BY id";
 
 	// Execute the query
 	$res = $linkMop->query($sql);

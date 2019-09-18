@@ -26,7 +26,7 @@ export default new Router({
       }
     },
     {
-      path: '/SplitControl/:competitorId/:radioId',
+      path: '/SplitControl/:competitorId/:radioId?',
       name: 'SplitControl',
       component: SplitControl,
       meta: {
@@ -34,7 +34,7 @@ export default new Router({
       }
     },
     {
-      path: '/OverallStandings',
+      path: '/OverallStandings/:classesToShow?',
       name: 'OverallStandings',
       component: OverallStandings,
       meta: {

@@ -188,8 +188,15 @@
 		data() {
 			return {
 				resultsResponse: [],
+				classesToShow: this.$route.params.classesToShow,
 				currentClassIndex: 0, // index from resultsResponse of the current class being displayed
 				currentClassPage: 1, // the current page of that class being displayed
+			}
+		},
+
+		watch: {
+			'$route' (to, from) {
+				this.classesToShow = to.params.classesToShow;
 			}
 		},
 
@@ -248,12 +255,11 @@
 					this.currentClassIndex += 1;
 
 					// Check if we have reached the end of the results
-					if (this.currentClassIndex >= this.resultsResponse.cmpResults.length - 1) {
+					if (this.currentClassIndex > this.resultsResponse.cmpResults.length - 1) {
 
 						// Rewind back to the first class
 						this.currentClassIndex = 0;
-
-						// Reset the scroll on all classes
+					
 						for (var i = 0; i <= this.resultsResponse.cmpResults.length; i++) {
 							const clsName = this.resultsResponse.cmpResults[i].clsName;
 							this.$refs[clsName][0].scrollTop = 0;
@@ -334,7 +340,12 @@
 			async refreshResults () {
 
 				// Get the new results
-				this.resultsResponse = await meosResultsApi.getOverallStandings();
+				if ((this.classesToShow != null) && (this.classesToShow != undefined) && (this.classesToShow.length > 0)) {
+					this.resultsResponse = await meosResultsApi.getOverallStandingsForClasses(this.classesToShow);
+				}
+				else {
+					this.resultsResponse = await meosResultsApi.getOverallStandings();
+				}
 
 			},
 
