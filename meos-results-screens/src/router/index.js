@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import ResultsTable from '@/components/ResultsScreen/ResultsTable'
+import ResultsTableRelay from '@/components/ResultsScreen/ResultsTableRelay'
 import SplitControl from '@/components/BroadcastGraphics/SplitControl'
 import OverallStandings from '@/components/BroadcastGraphics/OverallStandings'
 import LatestPunches from '@/components/BroadcastGraphics/LatestPunches'
@@ -23,6 +24,22 @@ export default new Router({
 	  component: ResultsTable,
 	  meta: {
 		title: "Results Screen"
+	  }
+	},
+	{
+	  path: '/ResultsScreenRelay',
+	  name: 'ResultsTableRelay',
+	  component: ResultsTableRelay,
+	  meta: {
+		title: "Results Screen - Relay"
+	  }
+	},
+	{
+	  path: '/ResultsScreenRelay/:page',
+	  name: 'ResultsTableRelayPage',
+	  component: ResultsTableRelay,
+	  meta: {
+		title: "Results Screen - Relay"
 	  }
 	},
 	{

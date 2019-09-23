@@ -19,6 +19,9 @@ export default {
   getResultsScreen () {
     return this.execute('get', '/results-api.php')
   },
+  getResultsScreenRelay () {
+    return this.execute('get', '/results-api-relay.php')
+  },
   getSplitResults (competitorId, radioId) {
     return this.execute('get', `/split-control-api.php?competitorId=${competitorId}&radioId=${radioId}`)
   },
