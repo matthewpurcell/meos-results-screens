@@ -9,53 +9,53 @@ Vue.use(Router)
 
 export default new Router({
   routes: [
-    {
-      path: '/ResultsScreen',
-      name: 'ResultsTable',
-      component: ResultsTable,
-      meta: {
-      	title: "Results Screen"
-      }
-    },
-    {
-      path: '/ResultsScreen/:page',
-      name: 'ResultsTablePage',
-      component: ResultsTable,
-      meta: {
-      	title: "Results Screen"
-      }
-    },
-    {
-      path: '/SplitControl/:competitorId/:radioId?',
-      name: 'SplitControl',
-      component: SplitControl,
-      meta: {
-      	title: "Graphics - Split Control"
-      }
-    },
-    {
-      path: '/OverallStandings/:classesToShow?',
-      name: 'OverallStandings',
-      component: OverallStandings,
-      meta: {
-      	title: "Graphics - Overall Standings"
-      }
-    },
-    {
-      path: '/LatestPunches/:radioId?',
-      name: 'LatestPunches',
-      component: LatestPunches,
-      meta: {
-      	title: "Graphics - Latest Punches"
-      }
-    },
-    {
-      path: '/Dashboard',
-      name: 'Dashboard',
-      component: Dashboard,
-      meta: {
-      	title: "Graphics - Dashboard"
-      }
-    },
+	{
+	  path: '/ResultsScreen',
+	  name: 'ResultsTable',
+	  component: ResultsTable,
+	  meta: {
+		title: "Results Screen"
+	  }
+	},
+	{
+	  path: '/ResultsScreen/:page',
+	  name: 'ResultsTablePage',
+	  component: ResultsTable,
+	  meta: {
+		title: "Results Screen"
+	  }
+	},
+	{
+	  path: '/SplitControl/:competitorId/:radioId?',
+	  name: 'SplitControl',
+	  component: SplitControl,
+	  meta: {
+		title: "Graphics - Split Control"
+	  }
+	},
+	{
+	  path: '/OverallStandings/:classesToShow?',
+	  name: 'OverallStandings',
+	  component: OverallStandings,
+	  meta: {
+		title: "Graphics - Overall Standings"
+	  }
+	},
+	{
+	  path: '/LatestPunches/:radioId?',
+	  name: 'LatestPunches',
+	  component: LatestPunches,
+	  meta: {
+		title: "Graphics - Latest Punches"
+	  }
+	},
+	{
+	  path: '/Dashboard',
+	  name: 'Dashboard',
+	  component: Dashboard,
+	  meta: {
+		title: "Graphics - Dashboard"
+	  }
+	},
   ]
 })

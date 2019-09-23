@@ -91,6 +91,14 @@
 
 </template>
 
+<style>
+
+	body {
+		background-color: #333;
+	}
+
+</style>
+
 <style scoped>
 
 /* roboto-100 - latin */
