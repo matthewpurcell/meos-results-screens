@@ -91,14 +91,6 @@
 
 </template>
 
-<style>
-
-	body {
-		background-color: #333;
-	}
-
-</style>
-
 <style scoped>
 
 /* roboto-100 - latin */
@@ -806,6 +798,10 @@ td.col-radioDiff {
 			'$route' (to, from) {
 				this.pageNum = parseInt(this.$route.params.page) || 0;
 			}
+		},
+
+		beforeCreate: function() {
+			document.body.className = 'grey';
 		},
 
 		created () {

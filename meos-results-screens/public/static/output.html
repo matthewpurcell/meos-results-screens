@@ -11,6 +11,7 @@
 			body {
 				padding: 0;
 				margin: 0;
+				background-color: green;
 			}
 
 			iframe {
@@ -30,86 +31,9 @@
 
 		<script>
 
-			// Listen for messages
-			window.addEventListener("message", receiveMessage, false);
-
-			// Handler for received messages
-			function receiveMessage(event) {
-
-				// Decode the JSON payload into an object
-				var payloadDecoded = JSON.parse(event.data);
-
-				// Show staged event
-				if (payloadDecoded.command == "CHANGE-GRAPHIC") {
-
-					// Get the graphic name
-					const graphicName = payloadDecoded.graphicName;
-
-					if (graphicName == "showSplitControl") {
-
-						$('#graphics-frame').attr('src', '/#/SplitControl/13489/FINISH');
-
-					}
-
-					else if (graphicName == "showLatestPunches") {
-
-						// Get the radio id
-						var radioId = payloadDecoded.radioId;
-
-						// Create the new url
-						var newURL = '/#/LatestPunches/' + radioId;
-
-						// Show the graphics
-						$('#graphics-frame').attr('src', newURL);
-						
-					}
-
-					else if (graphicName == "showRunningTime") {
-
-						// Get the competitor and radio ids
-						var competitorId = payloadDecoded.competitorId;
-
-						// Create the new url
-						var newURL = '/#/SplitControl/' + competitorId;
-
-						// Show the graphics
-						$('#graphics-frame').attr('src', newURL);
-
-					}
-
-					else if (graphicName == "showRadioSplit") {
-
-						// Get the competitor and radio ids
-						var competitorId = payloadDecoded.competitorId;
-						var radioId = payloadDecoded.radioId;
-
-						// Create the new url
-						var newURL = '/#/SplitControl/' + competitorId + '/' + radioId;
-
-						// Show the graphics
-						$('#graphics-frame').attr('src', newURL);
-
-					}
-
-					else if (graphicName == "showOverallResults") {
-
-						// Check if we only want to show certain classes
-						if (payloadDecoded.classesToShow.length > 0) {
-							$('#graphics-frame').attr('src', `/#/OverallStandings/${payloadDecoded.classesToShow}`);
-						}
-
-						else {
-							$('#graphics-frame').attr('src', '/#/OverallStandings');
-
-						}
-
-					}
-
-				}
-
-
+			function changeUrl(url) {
+				$('#graphics-frame').attr('src', url);
 			}
-
 
 		</script>
 

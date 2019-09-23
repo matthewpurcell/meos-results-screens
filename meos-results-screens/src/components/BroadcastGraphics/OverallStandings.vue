@@ -160,6 +160,9 @@
 		width: 100px;
 		text-align: center;
 		font-weight: 300;
+		max-width: 100px;
+		white-space: nowrap;
+		overflow: hidden;
 	}
 
 	table.clsResults tr.resultRow td.time {
@@ -191,13 +194,19 @@
 				classesToShow: this.$route.params.classesToShow,
 				currentClassIndex: 0, // index from resultsResponse of the current class being displayed
 				currentClassPage: 1, // the current page of that class being displayed
+				updateTimeout: null,
+				scrollInterval: null,
 			}
 		},
 
-		watch: {
+		/*watch: {
 			'$route' (to, from) {
 				this.classesToShow = to.params.classesToShow;
 			}
+		},*/
+
+		beforeCreate: function() {
+			document.body.className = 'green';
 		},
 
 		created () {
@@ -211,7 +220,7 @@
 				const updateIntervalMs = 1000;
 				const delay = Math.floor(nowMs / 1000) * 1000 - nowMs + updateIntervalMs
 
-				setTimeout(() => {
+				this.updateTimeout = setTimeout(() => {
 					this.refreshResults()
 					updateLoop()
 
@@ -223,7 +232,7 @@
 
 			
 			// Scroll/transition the results
-			setInterval(() => {
+			this.scrollInterval = setInterval(() => {
 
 				// DEBUG - stop after one scroll
 				// clearInterval(transitionInterval);
@@ -279,6 +288,11 @@
 
 			}, 5000)
 
+		},
+
+		beforeDestroy () {
+			clearTimeout(this.updateTimeout);
+			clearInterval(this.scrollInterval);
 		},
 
 		filters: {

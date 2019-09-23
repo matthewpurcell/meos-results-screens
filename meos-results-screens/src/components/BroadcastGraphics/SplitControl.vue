@@ -61,8 +61,6 @@
 		position: relative;
 	}
 
-
-
 	#graphicsContainer {
 		/*background-color: red;*/
 		position: absolute;
@@ -73,16 +71,12 @@
 		overflow: hidden;
 	}
 
-
-
 	#splitResults, #radioInfo, #runnerInfo {
 		font-family: Roboto;
 		font-size: 26px;		
 		border-collapse: separate;
 		border-spacing: 0 4px;
 	}
-
-
 
 	#splitResults {
 		position: absolute;
@@ -122,6 +116,9 @@
 		text-align: center;
 		/*background-color: red;*/
 		font-weight: 300;
+		max-width: 100px;
+		white-space: nowrap;
+		overflow: hidden;
 	}
 
 	#splitResults tr td.time {
@@ -239,10 +236,11 @@
 				refreshTimer: '',
 				showSplits: false,
 				renderSplits: true,
+				updateTimeout: null,
 			}
 		},
 
-		watch: {
+		/*watch: {
 			'$route' (to, from) {
 
 				this.competitorId = to.params.competitorId;
@@ -266,6 +264,10 @@
 				}, 1000);
 
 			}
+		},*/
+
+		beforeCreate: function() {
+			document.body.className = 'green';
 		},
 
 		created () {
@@ -282,7 +284,7 @@
 				const updateIntervalMs = 1000;
 				const delay = Math.floor(nowMs / 1000) * 1000 - nowMs + updateIntervalMs
 
-				setTimeout(() => {
+				this.updateTimeout = setTimeout(() => {
 					this.refreshResults()
 					updateLoop()
 
@@ -291,6 +293,10 @@
 
 			updateLoop()
 
+		},
+
+		beforeDestroy () {
+			clearTimeout(this.updateTimeout);
 		},
 
 		filters: {

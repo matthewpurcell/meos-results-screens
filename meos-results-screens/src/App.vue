@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-  	<router-view></router-view>
-    <!--<router-view :key="$route.fullPath"></router-view>--> <!-- needed to force a reload when the url changes (e.g. adding params) -->
+  	<!-- <router-view></router-view> -->
+    <router-view :key="$route.fullPath"></router-view> <!-- needed to force a reload when the url changes (e.g. adding params) -->
   </div>
 </template>
 
@@ -10,6 +10,14 @@
 	body {
 		margin: 0;
 		padding: 0;
+	}
+
+	body.green {
+		background: green;
+	}
+
+	body.grey {
+		background: #333;
 	}
 
 </style>

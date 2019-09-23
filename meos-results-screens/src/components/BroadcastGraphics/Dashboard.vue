@@ -56,7 +56,9 @@
 								
 								<template slot="top-row" slot-scope="{ fields }">
 									<td v-for="field in fields" :key="field.key">
-										<input v-model="radioSplitClassFilters[field.key]" :placeholder="field.label" @input="radioSplitClassFilterTextChanged()" style="width: 100px;">
+										<template v-if="field.label != 'Time' && field.label != 'Club'">
+											<input v-model="radioSplitClassFilters[field.key]" :placeholder="field.label" @input="radioSplitClassFilterTextChanged()" style="width: 100px;">
+										</template>
 									</td>
 								</template>
 
@@ -235,9 +237,7 @@
 		},
 
 		created () {
-
 			
-		
 		},
 
 		mounted() {
@@ -418,20 +418,6 @@
 
 			},
 
-			showSplitControl() {
-
-				// Check that we have an output window
-				if (this.outputWindow) {
-
-					// Send a message to the output window
-					var payload = {"command": "CHANGE-GRAPHIC", "graphicName": "showSplitControl"};
-					var payloadJson = JSON.stringify(payload);
-					this.outputWindow.postMessage(payloadJson, "*");
-
-				}
-
-			},
-
 			showLatestPunches() {
 
 				// Get the radio id
@@ -439,19 +425,27 @@
 				if (this.latestPunchesRadio != "FINISH")
 					radioId = this.latestPunchesRadio.radio;
 
-				// Send a message to the output window
-				var payload = {"command": "CHANGE-GRAPHIC", "graphicName": "showLatestPunches", "radioId" : radioId};
-				var payloadJson = JSON.stringify(payload);
-				this.outputWindow.postMessage(payloadJson, "*");
+				if (this.outputWindow) {
+					this.outputWindow.changeUrl('/#/LatestPunches/' + radioId);
+				}
+
+				else {
+					alert("Please open the output window.")
+				}
 
 			},
 
 			showRunningTime() {
 
-				// Send a message to the output window
-				var payload = {"command": "CHANGE-GRAPHIC", "graphicName": "showRunningTime", "competitorId" : this.radioSplitTableRowSelected[0].id};
-				var payloadJson = JSON.stringify(payload);
-				this.outputWindow.postMessage(payloadJson, "*");
+				var competitorId = this.radioSplitTableRowSelected[0].id;
+
+				if (this.outputWindow) {
+					this.outputWindow.changeUrl('/#/SplitControl/' + competitorId);
+				}
+
+				else {
+					alert("Please open the output window.")
+				}
 
 			},
 
@@ -462,12 +456,17 @@
 				if (radioObject == "FINISH")
 					radioId = "FINISH"
 				else
-					radioId = radioObject.radio;				
+					radioId = radioObject.radio;
 
-				// Send a message to the output window
-				var payload = {"command": "CHANGE-GRAPHIC", "graphicName": "showRadioSplit", "competitorId" : this.radioSplitTableRowSelected[0].id, "radioId": radioId};
-				var payloadJson = JSON.stringify(payload);
-				this.outputWindow.postMessage(payloadJson, "*");
+				var competitorId = this.radioSplitTableRowSelected[0].id;
+
+				if (this.outputWindow) {
+					this.outputWindow.changeUrl('/#/SplitControl/' + this.radioSplitTableRowSelected[0].id + '/' + radioId);			
+				}
+
+				else {
+					alert("Please open the output window.")
+				}
 
 			},
 
@@ -476,10 +475,13 @@
 				// Get the classes to show
 				var classesToShow = this.overallResultsClassesSelected.join();
 
-				// Send a message to the output window
-				var payload = {"command": "CHANGE-GRAPHIC", "graphicName": "showOverallResults", "classesToShow": classesToShow};
-				var payloadJson = JSON.stringify(payload);
-				this.outputWindow.postMessage(payloadJson, "*");
+				if (this.outputWindow) {
+					this.outputWindow.changeUrl(`/#/OverallStandings/${classesToShow}`);
+				}
+
+				else {
+					alert("Please open the output window.")
+				}
 
 			},
 

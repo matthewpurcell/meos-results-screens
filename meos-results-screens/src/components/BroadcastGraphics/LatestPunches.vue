@@ -14,7 +14,7 @@
 
 				<tbody is="transition-group" name="punchTableBody" @enter="enter" @beforeEnter="beforeEnter" @leave="leave" :css="false">
 
-					<tr v-for="result in resultsResponse.latestPunches.slice(0, 5)" class="punchRow" :key="result.competitorId">
+					<tr v-for="result in resultsResponse.latestPunches.slice(0, 6)" class="punchRow" :key="result.competitorId">
 
 						<td class="rank"><div>{{ result.rank }}</div></td>
 						<td class="className"><div>{{ result.clsName }}</div></td>
@@ -29,24 +29,28 @@
 
 			</table>
 
-			<table class="punchTable" id="punchTableLeft">
+			<div id="punchTableLeftContainer">
 
-				<tbody is="transition-group" name="punchTableBody" @enter="enter" @beforeEnter="beforeEnter" @leave="leave" :css="false">
+				<table class="punchTable" id="punchTableLeft">
 
-					<tr v-for="result in resultsResponse.latestPunches.slice(5, 10).reverse()" class="punchRow" :key="result.competitorId">
+					<tbody is="transition-group" name="punchTableBody" @enter="enter" @beforeEnter="beforeEnter" @leave="leave" :css="false">
 
-						<td class="rank"><div>{{ result.rank }}</div></td>
-						<td class="className"><div>{{ result.clsName }}</div></td>
-						<td class="name"><div>{{ result.name }}</div></td>
-						<td class="club"><div>{{ result.club }}</div></td>
-						<td class="time"><div>{{ result.time | formatAbsoluteTime }}</div></td>
-						<td class="diff"><div>{{ result.diff | formatAbsoluteDiff }}</div></td>
+						<tr v-for="result in resultsResponse.latestPunches.slice(5, 11).reverse()" class="punchRow" :key="result.competitorId">
 
-					</tr>
+							<td class="rank"><div>{{ result.rank }}</div></td>
+							<td class="className"><div>{{ result.clsName }}</div></td>
+							<td class="name"><div>{{ result.name }}</div></td>
+							<td class="club"><div>{{ result.club }}</div></td>
+							<td class="time"><div>{{ result.time | formatAbsoluteTime }}</div></td>
+							<td class="diff"><div>{{ result.diff | formatAbsoluteDiff }}</div></td>
 
-				</tbody>
+						</tr>
 
-			</table>
+					</tbody>
+
+				</table>
+
+			</div>
 
 		</div>
 
@@ -104,13 +108,22 @@
 	table#punchTableRight {
 		position: absolute;
 		right: 0;
-		bottom: 0;
+		top: 52px;
+	}
+
+	#punchTableLeftContainer {
+		position: absolute;
+		height: 248px;
+		width: 845px;
+		left: 0;
+		bottom: 0px;
+		overflow: hidden;
 	}
 
 	table#punchTableLeft{
 		position: absolute;
 		left: 0;
-		bottom: 0;
+		bottom: 0px;
 	}
 
 	table.punchTable {
@@ -175,8 +188,11 @@
 		width: 70px;
 		font-size: 18px;
 		text-align: center;
-		padding-top: 11px !important;
+		padding-top: 13px !important;
 		box-shadow: 15px 0 15px -15px #828282 inset;
+		max-width: 70px;
+		white-space: nowrap;
+		overflow: hidden;
 	}
 
 	table.punchTable td.time div {
@@ -216,19 +232,22 @@
 				radioId: this.$route.params.radioId,
 				ptb: 7,
 				mh: 45,
+				updateTimeout: null,
 			}
 		},
 
-		watch: {
+		/*watch: {
 			'$route' (to, from) {
 				this.radioId = to.params.radioId;
 			}
-		},
+		},*/
 
 		created () {
+					
+		},
 
-			
-		
+		beforeCreate: function() {
+			document.body.className = 'green';
 		},
 
 		mounted() {
@@ -242,7 +261,7 @@
 				const updateIntervalMs = 1000;
 				const delay = Math.floor(nowMs / 1000) * 1000 - nowMs + updateIntervalMs
 
-				setTimeout(() => {
+				this.updateTimeout = setTimeout(() => {
 					this.refreshResults()
 					updateLoop()
 
@@ -252,6 +271,10 @@
 			// Start the update loop
 			updateLoop()
 
+		},
+
+		beforeDestroy () {
+			clearTimeout(this.updateTimeout);
 		},
 
 		filters: {
@@ -385,14 +408,14 @@
 				);
 			},
 			
-			leave(el, done) {
+			/*leave(el, done) {
 				let divs = el.querySelectorAll("div");
 				Velocity(
 					divs,
 					{ maxHeight: "0px", paddingTop: "0px", paddingBottom: "0px" },
-					{ duration: 300, complete: done }
+					{ duration: 3000, complete: done }
 				);
-			},
+			},*/
 
 		}
 
