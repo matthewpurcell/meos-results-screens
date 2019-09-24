@@ -21,7 +21,7 @@
 					class="headingRow"
 					:style="{ height: headerRowHeight + 'px' }"
 				>
-					<th class="className" colspan="3"><span class="pillIcon" :style="{ backgroundColor: classColor(results.cls.clsName) }">{{ results.cls.clsName }} <span class="contText">{{ results.continued ? '(Cont...)' : '' }}</span></span></th>
+					<th class="className" colspan="2"><span class="pillIcon" :style="{ backgroundColor: classColor(results.cls.clsName) }">{{ results.cls.clsName }} <span class="contText">{{ results.continued ? '(Cont...)' : '' }}</span></span></th>
 					<th class="elapsedHeading" colspan="2">Total</th>
 					<th class="splitHeading" colspan="3" v-for="(n, i) in results.cls.legCount" :key="n">Leg {{ n }}</th>
 					<th
@@ -45,8 +45,15 @@
 						<template v-else><span class="pillIcon nonfinisher">{{ statusToRank[result.status] }}</span></template>
 					</td>
 
-					<td class="col-competitor" :style="{ width: colCompetitor + 'px' }">{{ result.teamName }}</td>
-					<td class="col-club" :style="{ width: colClub + 'px' }">{{ result.club }}</td>
+					<td class="col-competitor" :style="{ width: colCompetitor + colClub + 'px' }">{{ nameAbbreviate(result.teamName) }}
+
+						<div class="runnerNames">
+							<template v-for="(n, i) in results.cls.legCount">
+								{{ result.legs[i].runnerLastName }} <span v-if="n != results.cls.legCount"> / </span>
+							</template>
+						</div>
+
+					</td>
 
 					<td class="col-elapsedTime" :style="{ width: colElapsedTime + 'px' }">
 						<template v-if="result.startTime > 0 && competitorStarted(result.startTime) == false"><span class="startTimeDisplay">{{ (result.startTime / 10) | formatStartTime }}</span></template>
@@ -384,6 +391,13 @@ td.col-competitor {
 	font-weight: 500;
 }
 
+td.col-competitor .runnerNames {
+	font-size: 14px;
+	font-weight: 300;
+	padding-top: 5px;
+	width: 100%;
+}
+
 td.col-club {
 	vertical-align: middle;
 }
@@ -508,7 +522,7 @@ td.col-radioDiff {
 
 				windowWidth: 0,
 				windowHeight: 0,
-				rowHeight: 30,
+				rowHeight: 60,
 				headerRowHeight: 55,
 				columnGap: 20,
 				pageSidePadding: 10,
@@ -941,6 +955,17 @@ td.col-radioDiff {
 
 				return `hsl(${h}, ${s}%, ${l}%)`;
 
+			},
+
+			// Returns the first four letters of the club name
+			clubAbbreviate(str) {
+				if (str != null)
+					return str.substring(0, 4);
+				return '';
+			},
+
+			nameAbbreviate(str) {
+				return str.replace("Orienteering", "");
 			},
 
 		}

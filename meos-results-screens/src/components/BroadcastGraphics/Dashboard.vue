@@ -159,7 +159,7 @@
 				radioSplitTablePerPage: 10,
 				radioSplitClassTableFields: [
 					{
-						key: 'id',
+						key: 'bib',
 						sortable: true
 					},
 					{
@@ -371,14 +371,10 @@
 			// Gets the competitors for a particular class
 			classObjectForClassId(classId) {
 
-				console.log(classId);
-
 				// Find that class in the results
 				for (var i = 0; i < this.resultsResponse.classes; i = i + 1) {
 
 					var classObject = this.resultsResponse.classes[i];
-
-					console.log(classObject);
 
 					// Found
 					if (classObject.id == classId) {
@@ -397,12 +393,12 @@
 
 			radioSplitClassTimeToShow(competitorObject) {
 
-				// Return their finish time if they are finished
-				if (competitorObject.finishTime != null)
-					return competitorObject.finishTime;				
+				// Return their elapsed running time thus far
+				if (competitorObject.finishTime == null || competitorObject.finishTime == 0)
+					return this.calculateElapsedTime(competitorObject.startTime);
 
-				// Otherwise, return their elapsed running time thus far
-				return this.calculateElapsedTime(competitorObject.startTime);
+				// Otherwise, return their finish time if they are finished
+				return competitorObject.finishTime;
 
 			},
 
@@ -461,7 +457,7 @@
 				var competitorId = this.radioSplitTableRowSelected[0].id;
 
 				if (this.outputWindow) {
-					this.outputWindow.changeUrl('/#/SplitControl/' + this.radioSplitTableRowSelected[0].id + '/' + radioId);			
+					this.outputWindow.changeUrl('/#/SplitControl/' + competitorId + '/' + radioId);			
 				}
 
 				else {

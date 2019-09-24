@@ -23,7 +23,7 @@
 				>
 					<th class="className" colspan="3"><span class="pillIcon" :style="{ backgroundColor: classColor(results.cls.clsName) }">{{ results.cls.clsName }} <span class="contText">{{ results.continued ? '(Cont...)' : '' }}</span><div class="classMetadata"><span class="classLength">{{ results.cls.length != null ? formatDistance(results.cls.length) + ' km' : '' }}</span> &#8226; <span class="classCourse">{{ results.cls.course }}</span></div></span></th>
 					<th class="elapsedHeading" colspan="2">Total</th>
-					<th class="splitHeading" colspan="3" v-for="(n, i) in results.cls.radioCount" :key="n">Split {{ n }} - {{ results.cls.radioInfo[i].distance != null ? formatDistance(results.cls.radioInfo[i].distance) + ' km' : '' }}</th>
+					<th class="splitHeading" colspan="3" v-for="(n, i) in results.cls.radioCount" :key="n">Split {{ n }} {{ results.cls.radioInfo[i].distance != null ? '- ' + formatDistance(results.cls.radioInfo[i].distance) + ' km' : '' }}</th>
 					<th
 						v-if="results.cls.radioCount < column.maxRadioCount"
 						:colspan="(column.maxRadioCount - results.cls.radioCount) * 3"
@@ -46,7 +46,7 @@
 					</td>
 
 					<td class="col-competitor" :style="{ width: colCompetitor + 'px' }">{{ result.competitor }}</td>
-					<td class="col-club" :style="{ width: colClub + 'px' }">{{ result.club }}</td>
+					<td class="col-club" :style="{ width: colClub + 'px' }">{{ clubAbbreviate(result.club) }}</td>
 
 					<td class="col-elapsedTime" :style="{ width: colElapsedTime + 'px' }">
 						<template v-if="result.startTime > 0 && competitorStarted(result.startTime) == false"><span class="startTimeDisplay">{{ (result.startTime / 10) | formatStartTime }}</span></template>
@@ -941,6 +941,13 @@ td.col-radioDiff {
 				return `hsl(${h}, ${s}%, ${l}%)`;
 
 			},
+
+			// Returns the first four letters of the club name
+			clubAbbreviate(str) {
+				if (str != null)
+					return str.substring(0, 4);
+				return '';
+			}
 
 		}
 

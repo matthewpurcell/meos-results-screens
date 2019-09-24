@@ -224,7 +224,7 @@
 
 			LEFT JOIN mopOrganization AS org ON competitor.org = org.id AND competitor.cid = org.cid
 
-			WHERE competitor.cid = '. $meosMopId . $timestampWhereClause . ' ORDER BY rt_timestamp DESC LIMIT 0, 11';
+			WHERE competitor.stat = 1 AND competitor.cid = '. $meosMopId . $timestampWhereClause . ' ORDER BY rt_timestamp DESC LIMIT 0, 11';
 
 		// Run the query
 		$res = $linkMop->query($sql);

@@ -12,7 +12,8 @@
 						<td class="rank">{{ result.rank }} </td>
 						<td class="name">{{ result.name }}</td>
 						<td class="club">{{ result.club }}</td>
-						<td class="time" v-if="result.diff != null && result.diff != 0">{{ result.diff | formatAbsoluteDiff }}</td> <!-- punched, not the leader -->
+						<td class="time" v-if="isOnlyCompetitor()">{{ calculateElapsedTime(resultsResponse.competitor.startTime) | formatAbsoluteTime }}</td>
+						<td class="time" v-else-if="result.diff != null && result.diff != 0">{{ result.diff | formatAbsoluteDiff }}</td> <!-- punched, not the leader -->
 						<td class="time" v-else-if="result.diff == 0">{{ result.radioTime | formatAbsoluteTime }}</td> <!-- punched, the leader -->
 						<td class="time" v-else-if="calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) == 0">0:00</td> <!-- not punched, still going. this gets around the filter not correctly printing 0:00 -->
 						<td class="time" v-else>{{ calculateDiffToLeader(calculateElapsedTime(resultsResponse.competitor.startTime)) | formatAbsoluteDiff }}</td> <!-- not punched, still going -->
@@ -31,7 +32,7 @@
 					<tr>
 						<td>
 							<span class="className">{{ resultsResponse.competitor.clsName }}</span>
-							<span class="radioDetails">{{ resultsResponse.radioInfo.radioName }} &mdash; {{ formatDistance(resultsResponse.radioInfo.distance) }} km {{ (resultsResponse.radioInfo.radioName == "Finish" ? '' : '(' + resultsResponse.radioInfo.percentage + '%)') }}</span>
+							<span class="radioDetails">{{ resultsResponse.radioInfo.radioName }} <span v-if="resultsResponse.radioInfo.distance != null">&mdash; {{ formatDistance(resultsResponse.radioInfo.distance) }} km {{ (resultsResponse.radioInfo.radioName == "Finish" ? '' : '(' + resultsResponse.radioInfo.percentage + '%)') }}</span></span>
 						</td>
 					</tr>
 				</table>
@@ -626,6 +627,12 @@
 				return distanceInKm;
 
 			},
+
+			isOnlyCompetitor() {
+				if (this.resultsResponse.radioResults.length == 0)
+					return true;
+				return false;
+			}
 
 		}
 

@@ -113,6 +113,31 @@
 	}
 
 
+	// -------------------------------
+	// Get all competitors ids to bibs
+	// -------------------------------
+
+	// Connect to the MeOS main database
+	$linkMeosMain = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, $meosEventNameId);
+
+	// Query the MeOS main database for a list of competitors in this competition
+	$sql = "SELECT Id, Bib FROM oRunner ORDER BY Id";
+
+	// Execute the query
+	$res = $linkMeosMain->query($sql);
+
+	// Create an array to store the details
+	$competitorIdToBibArray = array();
+
+	// Loop through each competitor and add to the array
+	while ($r = $res->fetch_assoc()) {
+		$competitorIdToBibArray[$r['Id']] = $r['Bib'];
+	}
+
+	// Close the connection to the database
+	mysqli_close($linkMeosMain);
+
+
 	// -------------------
 	// Get all competitors
 	// -------------------
@@ -140,6 +165,7 @@
 		// Create an object to store the competitor details
 		$competitorObject = array();
 		$competitorObject['id'] = $r['id'];
+		$competitorObject['bib'] = $competitorIdToBibArray[$r['id']];
 		$competitorObject['name'] = $r['name'];
 		$competitorObject['firstName'] = $r['firstName'];
 		$competitorObject['lastName'] = $r['lastName'];

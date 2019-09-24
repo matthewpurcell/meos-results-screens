@@ -144,7 +144,7 @@
 	$linkMeosMain = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, "MeOSMain");
 
 	// Query the MeOS main database for a list of competitions
-	$sql = "SELECT Id, Name, Date, NameId FROM oEvent";
+	$sql = "SELECT Id, Name, Date, NameId FROM oEvent ORDER BY Date";
 
 	// Execute the query
 	$res = $linkMeosMain->query($sql);
@@ -191,7 +191,7 @@
 	$linkMop = @new mysqli(MYSQL_HOSTNAME, MYSQL_USERNAME, MYSQL_PASSWORD, "meos-mop");
 
 	// Query the MOP database for a list of competitions
-	$sql = "SELECT cid, name, date FROM mopCompetition";
+	$sql = "SELECT cid, name, date FROM mopCompetition ORDER BY Date";
 
 	// Execute the query
 	$res = $linkMop->query($sql);

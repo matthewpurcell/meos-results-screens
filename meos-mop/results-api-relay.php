@@ -165,15 +165,15 @@
 
 		SELECT team.id AS teamId, team.name AS teamName, team.cls AS classId, team.stat AS status, team.st AS startTime,
 
-		competitor1.rt AS leg1Time, competitor1.name AS leg1Runner, competitor1.id AS leg1RunnerId, competitor1.stat AS leg1Status,
+		competitor1.rt AS leg1Time, competitor1.name AS leg1Runner, REVERSE(SUBSTRING_INDEX(REVERSE(competitor1.name), ' ', 1)) AS leg1RunnerLastName, competitor1.id AS leg1RunnerId, competitor1.stat AS leg1Status,
 		CASE WHEN competitor1.rt IS NOT NULL AND competitor1.stat = 1 THEN RANK() OVER ( PARTITION BY (CASE WHEN competitor1.rt IS NOT NULL AND competitor1.stat = 1 THEN 1 ELSE 0 END) ORDER BY competitor1.rt ) END leg1Rank, 
 		CASE WHEN competitor1.rt <> 0 THEN competitor1.rt - (SELECT minRt FROM leg1Cte) ELSE NULL END leg1Diff, 
 
-		competitor2.rt AS leg2Time, competitor2.name AS leg2Runner, competitor2.id AS leg2RunnerId, competitor2.stat AS leg2Status,
+		competitor2.rt AS leg2Time, competitor2.name AS leg2Runner, REVERSE(SUBSTRING_INDEX(REVERSE(competitor2.name), ' ', 1)) AS leg2RunnerLastName, competitor2.id AS leg2RunnerId, competitor2.stat AS leg2Status,
 		CASE WHEN competitor2.rt IS NOT NULL AND competitor2.stat = 1 THEN RANK() OVER ( PARTITION BY (CASE WHEN competitor2.rt IS NOT NULL AND competitor2.stat = 1 THEN 1 ELSE 0 END) ORDER BY competitor2.rt ) END leg2Rank, 
 		CASE WHEN competitor2.rt <> 0 THEN competitor2.rt - (SELECT minRt FROM leg2Cte) ELSE NULL END leg2Diff, 
 
-		competitor3.rt AS leg3Time, competitor3.name AS leg3Runner, competitor3.id AS leg3RunnerId, competitor3.stat AS leg3Status,
+		competitor3.rt AS leg3Time, competitor3.name AS leg3Runner, REVERSE(SUBSTRING_INDEX(REVERSE(competitor3.name), ' ', 1)) AS leg3RunnerLastName, competitor3.id AS leg3RunnerId, competitor3.stat AS leg3Status,
 		CASE WHEN competitor3.rt IS NOT NULL AND competitor3.stat = 1 THEN RANK() OVER ( PARTITION BY (CASE WHEN competitor3.rt IS NOT NULL AND competitor3.stat = 1 THEN 1 ELSE 0 END) ORDER BY competitor3.rt ) END leg3Rank, 
 		CASE WHEN competitor3.rt <> 0 THEN competitor3.rt - (SELECT minRt FROM leg3Cte) ELSE NULL END leg3Diff,
 
@@ -231,6 +231,8 @@
 
 				$legObject = array();
 				$legObject['runnerId'] = $r['leg' . $i . 'RunnerId'];
+				$legObject['runnerName'] = $r['leg' . $i . 'Runner'];
+				$legObject['runnerLastName'] = $r['leg' . $i . 'RunnerLastName'];
 				$legObject['time'] = formatAbsoluteTime($r['leg' . $i . 'Time']);
 				$legObject['rank'] = $r['leg' . $i . 'Rank'];
 				$legObject['diff'] = formatDiffTime($r['leg' . $i . 'Diff']);
