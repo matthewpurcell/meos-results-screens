@@ -203,7 +203,7 @@
 }
 
 div.resultsScreen {
-	background-color: #333;
+	background-color: black;
 	color: #eee;
 	font-family: Roboto;
 	margin: 0;
@@ -285,11 +285,11 @@ tr.proceedToDownload td:first-child:after {
 
 
 tr:nth-child(even){
-	background-color: #444;
+	background-color: #222;
 }
 
 tr:nth-child(odd){
-	background-color: #333;
+	background-color: black;
 }
 
 th.className {
@@ -813,7 +813,7 @@ td.col-radioDiff {
 
 			const updateLoop = () => {
 				const nowMs = +new Date()
-				const updateIntervalMs = 5000;
+				const updateIntervalMs = 2000;
 				const delay = Math.floor(nowMs / 1000) * 1000 - nowMs + updateIntervalMs
 
 				setTimeout(() => {

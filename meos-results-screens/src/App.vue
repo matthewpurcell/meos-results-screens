@@ -17,7 +17,7 @@
 	}
 
 	body.grey {
-		background: #333;
+		background: black;
 	}
 
 </style>

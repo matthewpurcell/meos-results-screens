@@ -41,6 +41,7 @@
 									<button class="btn btn-outline-success" type="button" v-on:click="showRadioSplit({ radio })">Control {{ radio }}</button>
 								</template>
 								<button class="btn btn-outline-success" type="button" v-on:click="showRadioSplit('FINISH')">Finish</button>
+								<button class="btn btn-outline-danger clear-button" type="button" v-on:click="clearFields()">Clear Filters</button>
 							</b-form-group>
 
 							<b-table striped hover selectable
@@ -137,6 +138,10 @@
 
 	#graphics-dashboard .radioSplitButtons button {
 		margin-right: 20px;
+	}
+
+	#graphics-dashboard .radioSplitButtons button.clear-button {
+		margin-left: 100px;
 	}
 
 </style>
@@ -480,6 +485,15 @@
 				}
 
 			},
+
+			clearFields() {
+
+				this.radioSplitClassFilters['bib'] = '';
+				this.radioSplitClassFilters['firstName'] = '';
+				this.radioSplitClassFilters['lastName'] = '';
+				this.radioSplitClassFilters['className'] = '';
+
+			}
 
 		}
 
