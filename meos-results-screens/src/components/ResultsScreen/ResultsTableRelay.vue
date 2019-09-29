@@ -828,7 +828,7 @@ td.col-radioDiff {
 
 			const updateLoop = () => {
 				const nowMs = +new Date()
-				const updateIntervalMs = 2000;
+				const updateIntervalMs = 20000;
 				const delay = Math.floor(nowMs / 1000) * 1000 - nowMs + updateIntervalMs
 
 				setTimeout(() => {
