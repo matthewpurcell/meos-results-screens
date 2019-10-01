@@ -34,6 +34,12 @@ export default {
   getOverallStandingsForClasses (classList) {
     return this.execute('get', `/standings-api.php?classList=${classList}`)
   },
+  getOverallStandingsTopTen () {
+    return this.execute('get', `/standings-api.php?top=10`)
+  },
+  getOverallStandingsForClassesTopTen (classList) {
+    return this.execute('get', `/standings-api.php?classList=${classList}&top=10`)
+  },
   getLatestPunches () {
     return this.execute('get', `/latest-punches-api.php`)
   },

@@ -59,6 +59,14 @@ export default new Router({
 			}
 		},
 		{
+			path: '/OverallStandings/:classesToShow?/:topCount?',
+			name: 'OverallStandingsTopCount',
+			component: OverallStandings,
+			meta: {
+				title: "Graphics - Overall Standings"
+			}
+		},
+		{
 			path: '/LatestPunches/:radioId?',
 			name: 'LatestPunches',
 			component: LatestPunches,

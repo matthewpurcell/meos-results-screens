@@ -30,6 +30,12 @@
 
 	}
 
+	// Check for top 10
+	$limitQuery = '';
+	if (isset($_GET['top'])) {
+		$limitQuery = " LIMIT 0, 10";
+	}
+
 
 	// ------------------------------------------------------
 	// Get the current competition from the database defaults
@@ -202,7 +208,7 @@
 
 			WHERE competitor.cid = ". $meosMopId ." AND competitor.cls = ". $clsid ." AND competitor.rt > 0 AND competitor.stat = 1
 
-			ORDER BY competitor.rt";
+			ORDER BY competitor.rt" . $limitQuery;
 
 			// Run the query
 			$res = $linkMop->query($sql);

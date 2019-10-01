@@ -96,6 +96,8 @@
 
 							<div class="overallResultsButton">
 								<button class="btn btn-outline-success" type="button" v-on:click="showOverallResults()">Show Overall Results</button>
+								&nbsp;&nbsp;&nbsp;&nbsp;
+								<button class="btn btn-outline-success" type="button" v-on:click="showOverallResultsTop10()">Show Overall Results (Top 10)</button>
 							</div>
 
 						</b-tab>
@@ -478,6 +480,21 @@
 
 				if (this.outputWindow) {
 					this.outputWindow.changeUrl(`/#/OverallStandings/${classesToShow}`);
+				}
+
+				else {
+					alert("Please open the output window.")
+				}
+
+			},
+
+			showOverallResultsTop10() {
+
+				// Get the classes to show
+				var classesToShow = this.overallResultsClassesSelected.join();
+
+				if (this.outputWindow) {
+					this.outputWindow.changeUrl(`/#/OverallStandings/${classesToShow}/10`);
 				}
 
 				else {

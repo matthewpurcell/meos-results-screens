@@ -192,6 +192,7 @@
 			return {
 				resultsResponse: [],
 				classesToShow: this.$route.params.classesToShow,
+				topCount: this.$route.params.topCount,
 				currentClassIndex: 0, // index from resultsResponse of the current class being displayed
 				currentClassPage: 1, // the current page of that class being displayed
 				updateTimeout: null,
@@ -286,7 +287,7 @@
 
 				}
 
-			}, 5000)
+			}, 15000)
 
 		},
 
@@ -353,12 +354,28 @@
 
 			async refreshResults () {
 
-				// Get the new results
-				if ((this.classesToShow != null) && (this.classesToShow != undefined) && (this.classesToShow.length > 0)) {
-					this.resultsResponse = await meosResultsApi.getOverallStandingsForClasses(this.classesToShow);
+				if (this.topCount == "10") {
+
+					// Get the new results
+					if ((this.classesToShow != null) && (this.classesToShow != undefined) && (this.classesToShow.length > 0)) {
+						this.resultsResponse = await meosResultsApi.getOverallStandingsForClassesTopTen(this.classesToShow);
+					}
+					else {
+						this.resultsResponse = await meosResultsApi.getOverallStandingsTopTen();
+					}
+
 				}
+
 				else {
-					this.resultsResponse = await meosResultsApi.getOverallStandings();
+
+					// Get the new results
+					if ((this.classesToShow != null) && (this.classesToShow != undefined) && (this.classesToShow.length > 0)) {
+						this.resultsResponse = await meosResultsApi.getOverallStandingsForClasses(this.classesToShow);
+					}
+					else {
+						this.resultsResponse = await meosResultsApi.getOverallStandings();
+					}
+
 				}
 
 			},
